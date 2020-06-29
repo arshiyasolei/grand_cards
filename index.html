@@ -1,18 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cards Game!</title>
+    <script src="/main.js"></script>
 </head>
+
 <body>
     <div>
-        <img src="/assets/card0.jpg" alt="">
-        <br>
-        <img src="/assets/card0.jpg" alt="">
-        <br>
-        <img src="/assets/card0.jpg" alt="">
-        <br>
+        <p id="change">This will be changed to something</p>
+    </div>
+    <div>
+        <table>
+            <tr>
+                <!-- Test area -->
+                <td><img id="1" onclick="change_section_text(this)" height="42" width="42" src="/assets/card0.jpg" alt=""></td>
+                <td><img id="2" onclick="change_section_text(this)" height="42" width="42" src="/assets/card0.jpg" alt=""></td>
+                <td><img id="3" onclick="change_section_text(this)" height="42" width="42" src="/assets/card0.jpg" alt=""></td>
+            </tr>
+        </table>
+    </div>
+    <div>
+        <button>Start game!</button>
     </div>
 </body>
+
 </html>
