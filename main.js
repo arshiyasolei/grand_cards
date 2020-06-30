@@ -1,9 +1,10 @@
 var c;
-var ctx
+var ctx;
+//needs classes potentially
+//TODO: Add card animations and mouse selections
 window.onload = function() {
 
     c = document.getElementById("main_canvas_view");
-
     ctx = c.getContext("2d");
     ctx.canvas.width = window.innerWidth;
     ctx.canvas.height = window.innerHeight;
