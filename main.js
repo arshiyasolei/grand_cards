@@ -2,6 +2,7 @@ var c;
 var ctx;
 //needs classes potentially
 //TODO: Add card animations and mouse selections
+//TODO: Add networking connectivity
 window.onload = function() {
 
     c = document.getElementById("main_canvas_view");
