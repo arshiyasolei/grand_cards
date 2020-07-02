@@ -1,2 +1,2 @@
-# grand_cards
+# hafte_cards
 An upcoming card game!
