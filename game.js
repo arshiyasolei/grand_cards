@@ -20,8 +20,8 @@ window.onload = function() {
      canvas=document.getElementById("main_canvas_view");
      ctx=canvas.getContext("2d");
 
-    //ctx.canvas.width = window.innerWidth;
-    //ctx.canvas.height = window.innerHeight;
+    ctx.canvas.width = window.innerWidth;
+    ctx.canvas.height = window.innerHeight;
      BB=canvas.getBoundingClientRect();
      offsetX=BB.left;
      offsetY=BB.top;
