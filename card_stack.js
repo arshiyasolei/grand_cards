@@ -9,26 +9,28 @@ class card_stack {
             console.log(card_t)
             for (let i = 2; i < 11; i ++){
                 //Get image here
-                let img = new Image();
+                let img = new Image("145.2","204");
                 let tempi = i;
                 tempi.toString;
                 img.onload = function () {
-                    console.log("finally loaded")
+                    img.style.border='medium solid blue';
                 }
+                img.style.border='medium solid blue';
                 img.src = "assets/png/" +card_t + "_" +tempi + ".png";
                 //console.log("assets/png/" + tempi + "_of_" + card_t + ".png")
-                let res = [img,i,card_t]
+                let res = [img,i,card_t,null,null]
                 this.cards.push(res)
             }
             for (let i of aceme){
                 //Get image here
                 let tempi = i;
-                let img = new Image();
+                let img = new Image("145.2","204");
+                img.style.border='medium solid blue';
                 img.onload = function () {
-                    console.log("finally loaded")
+                    img.style.border='medium solid blue';
                 }
                 img.src = "assets/png/" +card_t + "_" +tempi + ".png";
-                let res = [img,i,card_t]
+                let res = [img,i,card_t,null,null]
                 this.cards.push(res)
             }
     }
