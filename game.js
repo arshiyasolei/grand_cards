@@ -41,15 +41,15 @@ function game(ctx, canvas, over_valid_card, players, cards_left, over_valid_card
   canvas.onmousedown = mouse_down(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card);
   canvas.onmouseup = mouse_up(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card);
   canvas.onmousemove = mouse_move(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card);
-  
+
 }
 //adds card to the hands of whoever that is waiting to play
 function add_extra_to_hand(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card) {
   return function () {
-      if (cards_left.cards.length > 0){
-        //console.log(cards_left.cards[cards_left.cards.length-1])
-        players[over_valid_card[0]].cards.push(cards_left.cards.pop())
-      }
+    if (cards_left.cards.length > 0) {
+      //console.log(cards_left.cards[cards_left.cards.length-1])
+      players[over_valid_card[0]].cards.push(cards_left.cards.pop())
+    }
   };
 }
 //check to see if any cards are selected
@@ -59,25 +59,46 @@ function mouse_down(ctx, canvas, over_valid_card, players, back_img, cards_left,
   };
 }
 
+function vector_equation_point(x_point,y_point,increment){
+
+  return {
+    0: increment,
+    1: slope * (increment-x_point) + y_point
+  };
+}
 //move selected card in a line
-function animate_in_line(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card){
-  let x_point;
-  let y_point;
-  function draw_line_move_animation(){
+function animate_in_line(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card,card_to_animate) {
   
+  //elegent equation for doing this
+  let current_top = top_card
+  let cards_left_len = cards_left.cards.length
+  let x_point = card_to_animate[3]
+  let y_point = card_to_animate[5]
+  let top_img_pointx = ctx.canvas.width / 2 - back_img.width + current_top[0][0].width + 30
+  let top_img_pointy = ctx.canvas.height / 2 - back_img.height / 2
+  let increment_x = x_point
+  let slope = (top_img_pointy-y_point)/(top_img_pointx-x_point)
+  console.log(x_point,y_point,top_img_pointx,top_img_pointy,slope)
+  function draw_line_move_animation() {
+    console.log("animation drawing!")
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     ctx.beginPath();
     let temp_width = ctx.canvas.width / 2 - back_img.width
     if (cards_left_len > 0) {
       //draw the back cover for the rest
       ctx.drawImage(back_img, temp_width, ctx.canvas.height / 2 - back_img.height / 2, back_img.width, back_img.height);
-  
     }
     if (current_top) {
-  
       ctx.drawImage(current_top[0][0], temp_width + current_top[0][0].width + 30, ctx.canvas.height / 2 - current_top[0][0].height / 2, current_top[0][0].width, current_top[0][0].height);
-  
     }
+    
+    temp_points = linear_equation_point(x_point,y_point,slope,increment_x)
+    
+    new_x_point = temp_points[0]
+    new_y_point = temp_points[1]
+
+    //console.log(slope,new_x_point,new_y_point,top_img_pointx,top_img_pointy)
+    ctx.drawImage(card_to_animate[0],new_x_point,new_y_point,current_top[0][0].width, current_top[0][0].height)
     ctx.save()
     //draw card in the middle and "sta∂ck"
     let y = 0
@@ -86,11 +107,10 @@ function animate_in_line(ctx, canvas, over_valid_card, players, back_img, cards_
       // decide if the shape is a rect or circle
       // (it's a rect if it has a width property)
       let g = 30
-  
+
       let cards_width = (players[i].cards.length - 1) * 50 + 145.2
       if (players[i].cards.length == 1) {
         cards_width = 145.2
-  
       }
       g = (ctx.canvas.width - cards_width) / 2
       for (let vals = 0; vals < players[i].cards.length; vals++) {
@@ -105,18 +125,25 @@ function animate_in_line(ctx, canvas, over_valid_card, players, back_img, cards_
         players[i].cards[vals][3] = g
         players[i].cards[vals][5] = 27 - y + y_shift_down
         players[i].cards[vals][6] = (27 - y) + players[i].cards[vals][0].height + y_shift_down
-  
+
         ctx.roundRect(g, 27 - y + y_shift_down, players[i].cards[vals][0].width, players[i].cards[vals][0].height, 10).stroke()
         ctx.drawImage(players[i].cards[vals][0], g, 27 - y + y_shift_down, players[i].cards[vals][0].width, players[i].cards[vals][0].height);
         g += 50
       }
       y = 27
       y_shift_down = ctx.canvas.height - 250
-      
+
     }
-    if (){
-    window.requestAnimationFrame(draw_line_move_animation);
+    //when we reach the dectination, stop animation
+    if (over_valid_card[0] == 1){
+    if (  (new_x_point < top_img_pointx) && (new_y_point < top_img_pointy) ) {
+      window.requestAnimationFrame(draw_line_move_animation);
     }
+  } else {
+    if ( (new_x_point < top_img_pointx) && (new_y_point > top_img_pointy) ) {
+      window.requestAnimationFrame(draw_line_move_animation);
+    }
+  }
   }
   window.requestAnimationFrame(draw_line_move_animation);
 
@@ -129,12 +156,12 @@ function mouse_up(ctx, canvas, over_valid_card, players, back_img, cards_left, t
     mouse_x = m[0];
     mouse_y = m[1];
     back_img_rangey = ctx.canvas.height / 2 - back_img.height / 2;
-    back_img_rangex =  ctx.canvas.width / 2 - back_img.width
-    if ( (back_img_rangex < mouse_x && mouse_x < back_img_rangex + back_img.width) && (back_img_rangey < mouse_y && mouse_y < back_img_rangey + back_img.height) ){
+    back_img_rangex = ctx.canvas.width / 2 - back_img.width
+    if ((back_img_rangex < mouse_x && mouse_x < back_img_rangex + back_img.width) && (back_img_rangey < mouse_y && mouse_y < back_img_rangey + back_img.height)) {
       console.log("in the zone of adding pile")
       add_extra_to_hand(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card)();
     }
-    if (check_card_nodraw_needed(players, over_valid_card, cards_left, top_card, ctx, canvas, back_img)){
+    if (check_card_nodraw_needed(players, over_valid_card, cards_left, top_card, ctx, canvas, back_img)) {
       for (let i = 0; i < players[over_valid_card[0]].cards.length; i++) {
 
         if (players[over_valid_card[0]].cards[i][3] < mouse_x && mouse_x < players[over_valid_card[0]].cards[i][4]) {
@@ -143,11 +170,14 @@ function mouse_up(ctx, canvas, over_valid_card, players, back_img, cards_left, t
             let player_card_type = players[over_valid_card[0]].cards[i][2]
             if (top_card[0][1] == player_card_val || top_card[0][2] == player_card_type) {
               //add to the top
-              
+
               cards_left.cards.push(top_card[0])
-              
+
+              //animates the top card movement
+              animate_in_line(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card,players[over_valid_card[0]].cards[i]) 
               //cards_left.cards.push(top_card[0])
               top_card[0] = players[over_valid_card[0]].cards[i]
+              //removes card from player sta∂ck
               players[over_valid_card[0]].cards.splice(i, 1)
               //console.log(players[over_valid_card[0]].cards)
               if (over_valid_card[0] == 1) {
@@ -168,13 +198,13 @@ function mouse_up(ctx, canvas, over_valid_card, players, back_img, cards_left, t
         temp[0] = 1;
       }
       check_win(players, temp)
-  } else {
-    console.log("add cards from the other pile!")
-    //for something else
-  }
+    } else {
+      console.log("add cards from the other pile!")
+      //for something else
+    }
     draw(ctx, players, back_img, cards_left.cards.length, top_card);
     console.log(top_card[0][1])
-    
+
   };
 }
 //might be used in the future
@@ -309,6 +339,7 @@ function draw(ctx, players, back_img, cards_left_len, current_top) {
       if (players[i].cards.length == 1 || players[i].cards.length - 1 == vals) {
         players[i].cards[vals][4] = g + players[i].cards[vals][0].width
       }
+  
       players[i].cards[vals][3] = g
       players[i].cards[vals][5] = 27 - y + y_shift_down
       players[i].cards[vals][6] = (27 - y) + players[i].cards[vals][0].height + y_shift_down
@@ -319,8 +350,8 @@ function draw(ctx, players, back_img, cards_left_len, current_top) {
     }
     y = 27
     y_shift_down = ctx.canvas.height - 250
-    
+
   }
-  
+
 
 }
