@@ -6,9 +6,7 @@ window.onload = function () {
   ctx.canvas.width = window.innerWidth;
   ctx.canvas.height = window.innerHeight;
 
-  let cards_left = new card_stack(function (x) {
-    ctx.drawImage(x, 0, -0)
-  });
+  let cards_left = new card_stack();
   cards_left.shuffle()
   let player_count = 2;
   let players = []
@@ -26,14 +24,15 @@ window.onload = function () {
   //pick first
   //load all images
   // listen for mouse events
-  let over_valid_card = [0]
+  let over_valid_card = [1]
   game(ctx, canvas, over_valid_card, players, cards_left, over_valid_card, back_img);
   //draw(ctx,players);
 
 }
 
 function game(ctx, canvas, over_valid_card, players, cards_left, over_valid_card, back_img) {
-  let top_card = [players[0].cards.pop()]
+  let top_card = [cards_left.cards.pop()]
+  console.log(cards_left.cards)
   setTimeout(() => {
 
     draw(ctx, players, back_img, cards_left.cards.length, top_card);
@@ -42,13 +41,85 @@ function game(ctx, canvas, over_valid_card, players, cards_left, over_valid_card
   canvas.onmousedown = mouse_down(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card);
   canvas.onmouseup = mouse_up(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card);
   canvas.onmousemove = mouse_move(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card);
-
+  
+}
+//adds card to the hands of whoever that is waiting to play
+function add_extra_to_hand(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card) {
+  return function () {
+      if (cards_left.cards.length > 0){
+        //console.log(cards_left.cards[cards_left.cards.length-1])
+        players[over_valid_card[0]].cards.push(cards_left.cards.pop())
+      }
+  };
 }
 //check to see if any cards are selected
 function mouse_down(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card) {
   return function (e) {
 
   };
+}
+
+//move selected card in a line
+function animate_in_line(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card){
+  let x_point;
+  let y_point;
+  function draw_line_move_animation(){
+  
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.beginPath();
+    let temp_width = ctx.canvas.width / 2 - back_img.width
+    if (cards_left_len > 0) {
+      //draw the back cover for the rest
+      ctx.drawImage(back_img, temp_width, ctx.canvas.height / 2 - back_img.height / 2, back_img.width, back_img.height);
+  
+    }
+    if (current_top) {
+  
+      ctx.drawImage(current_top[0][0], temp_width + current_top[0][0].width + 30, ctx.canvas.height / 2 - current_top[0][0].height / 2, current_top[0][0].width, current_top[0][0].height);
+  
+    }
+    ctx.save()
+    //draw card in the middle and "sta∂ck"
+    let y = 0
+    let y_shift_down = 0;
+    for (let i = 0; i < players.length; i++) {
+      // decide if the shape is a rect or circle
+      // (it's a rect if it has a width property)
+      let g = 30
+  
+      let cards_width = (players[i].cards.length - 1) * 50 + 145.2
+      if (players[i].cards.length == 1) {
+        cards_width = 145.2
+  
+      }
+      g = (ctx.canvas.width - cards_width) / 2
+      for (let vals = 0; vals < players[i].cards.length; vals++) {
+        //document.getElementById("body").appendChild(vals[0])
+        ctx.fillStyle = "white";
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 2;
+        players[i].cards[vals][4] = g + 50
+        if (players[i].cards.length == 1 || players[i].cards.length - 1 == vals) {
+          players[i].cards[vals][4] = g + players[i].cards[vals][0].width
+        }
+        players[i].cards[vals][3] = g
+        players[i].cards[vals][5] = 27 - y + y_shift_down
+        players[i].cards[vals][6] = (27 - y) + players[i].cards[vals][0].height + y_shift_down
+  
+        ctx.roundRect(g, 27 - y + y_shift_down, players[i].cards[vals][0].width, players[i].cards[vals][0].height, 10).stroke()
+        ctx.drawImage(players[i].cards[vals][0], g, 27 - y + y_shift_down, players[i].cards[vals][0].width, players[i].cards[vals][0].height);
+        g += 50
+      }
+      y = 27
+      y_shift_down = ctx.canvas.height - 250
+      
+    }
+    if (){
+    window.requestAnimationFrame(draw_line_move_animation);
+    }
+  }
+  window.requestAnimationFrame(draw_line_move_animation);
+
 }
 //if mouse up happens when a card was selected,
 //and the play was valid, remove card from player stack!
@@ -57,38 +128,53 @@ function mouse_up(ctx, canvas, over_valid_card, players, back_img, cards_left, t
     let m = get_mouse_position(canvas, e)
     mouse_x = m[0];
     mouse_y = m[1];
-    if (check_card_draw_needed(players, over_valid_card, cards_left, top_card, ctx, canvas, back_img)){
-    for (let i = 0; i < players[over_valid_card[0]].cards.length; i++) {
+    back_img_rangey = ctx.canvas.height / 2 - back_img.height / 2;
+    back_img_rangex =  ctx.canvas.width / 2 - back_img.width
+    if ( (back_img_rangex < mouse_x && mouse_x < back_img_rangex + back_img.width) && (back_img_rangey < mouse_y && mouse_y < back_img_rangey + back_img.height) ){
+      console.log("in the zone of adding pile")
+      add_extra_to_hand(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card)();
+    }
+    if (check_card_nodraw_needed(players, over_valid_card, cards_left, top_card, ctx, canvas, back_img)){
+      for (let i = 0; i < players[over_valid_card[0]].cards.length; i++) {
 
-      if (players[over_valid_card[0]].cards[i][3] < mouse_x && mouse_x < players[over_valid_card[0]].cards[i][4]) {
-        if (players[over_valid_card[0]].cards[i][5] < mouse_y && mouse_y < players[over_valid_card[0]].cards[i][6]) {
-          let player_card_val = players[over_valid_card[0]].cards[i][1]
-          let player_card_type = players[over_valid_card[0]].cards[i][2]
-          if (top_card[0][1] == player_card_val || top_card[0][2] == player_card_type) {
-            //add to the top
-            top_card[0] = players[over_valid_card[0]].cards[i]
-            players[over_valid_card[0]].cards.splice(i, 1)
-            //console.log(players[over_valid_card[0]].cards)
-            if (over_valid_card[0] == 1) {
-              over_valid_card[0] = 0;
-            } else {
-              over_valid_card[0] = 1;
+        if (players[over_valid_card[0]].cards[i][3] < mouse_x && mouse_x < players[over_valid_card[0]].cards[i][4]) {
+          if (players[over_valid_card[0]].cards[i][5] < mouse_y && mouse_y < players[over_valid_card[0]].cards[i][6]) {
+            let player_card_val = players[over_valid_card[0]].cards[i][1]
+            let player_card_type = players[over_valid_card[0]].cards[i][2]
+            if (top_card[0][1] == player_card_val || top_card[0][2] == player_card_type) {
+              //add to the top
+              
+              cards_left.cards.push(top_card[0])
+              
+              //cards_left.cards.push(top_card[0])
+              top_card[0] = players[over_valid_card[0]].cards[i]
+              players[over_valid_card[0]].cards.splice(i, 1)
+              //console.log(players[over_valid_card[0]].cards)
+              if (over_valid_card[0] == 1) {
+                over_valid_card[0] = 0;
+              } else {
+                over_valid_card[0] = 1;
+              }
+              break;
             }
-            break;
           }
         }
       }
-    }
+
+      temp = [0]
+      if (over_valid_card[0] == 1) {
+        temp[0] = 0;
+      } else {
+        temp[0] = 1;
+      }
+      check_win(players, temp)
+  } else {
+    console.log("add cards from the other pile!")
+    //for something else
   }
-    temp = [0]
-    if (over_valid_card[0] == 1) {
-      temp[0] = 0;
-    } else {
-      temp[0] = 1;
-    }
     draw(ctx, players, back_img, cards_left.cards.length, top_card);
     console.log(top_card[0][1])
-    check_win(players, temp)
+    
   };
 }
 //might be used in the future
@@ -107,7 +193,7 @@ function get_mouse_position(canvas, evt) {
   };
 }
 
-function check_card_draw_needed(players, over_valid_card, cards_left, top_card, ctx, canvas, back_img) {
+function check_card_nodraw_needed(players, over_valid_card, cards_left, top_card, ctx, canvas, back_img) {
 
   let draw_needed = 1;
   for (let i = 0; i < players[over_valid_card[0]].cards.length; i++) {
@@ -119,6 +205,8 @@ function check_card_draw_needed(players, over_valid_card, cards_left, top_card, 
     }
   }
   console.log("extra cards!")
+  /*
+  //Used for AI in the future
   while (draw_needed) {
     console.log("we looping")
     for (let i = 0; i < players[over_valid_card[0]].cards.length; i++) {
@@ -131,6 +219,7 @@ function check_card_draw_needed(players, over_valid_card, cards_left, top_card, 
         console.log(top_card[0][1])
         console.log(player_card_type)
         console.log(top_card[0][2])
+        cards_left.cards.push(top_card[0])
         top_card[0] = players[over_valid_card[0]].cards[i]
         players[over_valid_card[0]].cards.splice(i, 1)
         if (over_valid_card[0] == 1) {
@@ -149,9 +238,10 @@ function check_card_draw_needed(players, over_valid_card, cards_left, top_card, 
     } else if (draw_needed) {
       players[over_valid_card[0]].cards.push(cards_left.cards.pop())
     }
-    draw(ctx, players, back_img, cards_left.cards.length, top_card);
     
   }
+  */
+  draw(ctx, players, back_img, cards_left.cards.length, top_card);
   return false;
 }
 //wind conditions function
@@ -184,15 +274,16 @@ function draw(ctx, players, back_img, cards_left_len, current_top) {
 
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   ctx.beginPath();
+  let temp_width = ctx.canvas.width / 2 - back_img.width
   if (cards_left_len > 0) {
     //draw the back cover for the rest
-    let temp_width = ctx.canvas.width / 2 - back_img.width
     ctx.drawImage(back_img, temp_width, ctx.canvas.height / 2 - back_img.height / 2, back_img.width, back_img.height);
-    if (current_top) {
 
-      ctx.drawImage(current_top[0][0], temp_width + current_top[0][0].width + 30, ctx.canvas.height / 2 - current_top[0][0].height / 2, current_top[0][0].width, current_top[0][0].height);
+  }
+  if (current_top) {
 
-    }
+    ctx.drawImage(current_top[0][0], temp_width + current_top[0][0].width + 30, ctx.canvas.height / 2 - current_top[0][0].height / 2, current_top[0][0].width, current_top[0][0].height);
+
   }
   ctx.save()
   //draw card in the middle and "sta∂ck"
@@ -211,8 +302,8 @@ function draw(ctx, players, back_img, cards_left_len, current_top) {
     g = (ctx.canvas.width - cards_width) / 2
     for (let vals = 0; vals < players[i].cards.length; vals++) {
       //document.getElementById("body").appendChild(vals[0])
-      ctx.fillStyle = "white"
-      ctx.strokeStyle = "black"
+      ctx.fillStyle = "white";
+      ctx.strokeStyle = "black";
       ctx.lineWidth = 2;
       players[i].cards[vals][4] = g + 50
       if (players[i].cards.length == 1 || players[i].cards.length - 1 == vals) {
