@@ -59,11 +59,11 @@ function mouse_down(ctx, canvas, over_valid_card, players, back_img, cards_left,
   };
 }
 
-function vector_equation_point(x_point,y_point,increment){
+function vector_equation_point(x_point,y_point,top_img_pointx,top_img_pointy,increment){
 
   return {
-    0: increment,
-    1: slope * (increment-x_point) + y_point
+    0: x_point + increment*(top_img_pointx - x_point),
+    1: y_point + increment*(top_img_pointy - y_point)
   };
 }
 //move selected card in a line
@@ -92,11 +92,11 @@ function animate_in_line(ctx, canvas, over_valid_card, players, back_img, cards_
       ctx.drawImage(current_top[0][0], temp_width + current_top[0][0].width + 30, ctx.canvas.height / 2 - current_top[0][0].height / 2, current_top[0][0].width, current_top[0][0].height);
     }
     
-    temp_points = linear_equation_point(x_point,y_point,slope,increment_x)
+    temp_points = vector_equation_point(x_point,y_point,top_img_pointx,top_img_pointy,increment_x)
     
     new_x_point = temp_points[0]
     new_y_point = temp_points[1]
-
+    increment_x += 1
     //console.log(slope,new_x_point,new_y_point,top_img_pointx,top_img_pointy)
     ctx.drawImage(card_to_animate[0],new_x_point,new_y_point,current_top[0][0].width, current_top[0][0].height)
     ctx.save()
