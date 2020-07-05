@@ -76,9 +76,8 @@ function animate_in_line(ctx, canvas, over_valid_card, players, back_img, cards_
   let y_point = card_to_animate[5]
   let top_img_pointx = ctx.canvas.width / 2 - back_img.width + current_top[0][0].width + 30
   let top_img_pointy = ctx.canvas.height / 2 - back_img.height / 2
-  let increment_x = x_point
-  let slope = (top_img_pointy-y_point)/(top_img_pointx-x_point)
-  console.log(x_point,y_point,top_img_pointx,top_img_pointy,slope)
+  let increment_x = 0
+  console.log(x_point,y_point,top_img_pointx,top_img_pointy)
   function draw_line_move_animation() {
     console.log("animation drawing!")
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -96,7 +95,7 @@ function animate_in_line(ctx, canvas, over_valid_card, players, back_img, cards_
     
     new_x_point = temp_points[0]
     new_y_point = temp_points[1]
-    increment_x += 1
+    increment_x += 0.1
     //console.log(slope,new_x_point,new_y_point,top_img_pointx,top_img_pointy)
     ctx.drawImage(card_to_animate[0],new_x_point,new_y_point,current_top[0][0].width, current_top[0][0].height)
     ctx.save()
@@ -135,15 +134,11 @@ function animate_in_line(ctx, canvas, over_valid_card, players, back_img, cards_
 
     }
     //when we reach the dectination, stop animation
-    if (over_valid_card[0] == 1){
-    if (  (new_x_point < top_img_pointx) && (new_y_point < top_img_pointy) ) {
+    
+    if (  (new_x_point != top_img_pointx) && (new_y_point != top_img_pointy) ) {
       window.requestAnimationFrame(draw_line_move_animation);
     }
-  } else {
-    if ( (new_x_point < top_img_pointx) && (new_y_point > top_img_pointy) ) {
-      window.requestAnimationFrame(draw_line_move_animation);
-    }
-  }
+
   }
   window.requestAnimationFrame(draw_line_move_animation);
 
