@@ -5,7 +5,7 @@ window.onload = function () {
 
   ctx.canvas.width = window.innerWidth;
   ctx.canvas.height = window.innerHeight;
-
+  
   let cards_left = new card_stack();
   cards_left.shuffle()
   let player_count = 2;
@@ -58,7 +58,7 @@ function mouse_down(ctx, canvas, over_valid_card, players, back_img, cards_left,
 
   };
 }
-
+//parametric equations for path finding
 function vector_equation_point(x_point,y_point,top_img_pointx,top_img_pointy,increment){
 
   return {
