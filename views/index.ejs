@@ -2,82 +2,110 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cards Game!</title>
-    <script src="../../game.js"></script>
-    <script src="../../card_stack.js"></script>
-    <script src="../../players.js"></script>
-    <script src="../../card.js"></script>
-    <script src="../../leaderboard.js"></script>
-    <script src="../../audio.js" defer></script>
-    <script src="../../socket.io/socket.io.js"></script>
-    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="index.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cards Game!</title>
+  <script src="../../game.js"></script>
+  <script src="../../card_stack.js"></script>
+  <script src="../../players.js"></script>
+  <script src="../../game_tutorial.js"></script>
+  <script src="../../card.js"></script>
+  <script src="../../leaderboard.js"></script>
+  <script src="../../audio.js" defer></script>
+  <script src="../../socket.io/socket.io.js"></script>
+  <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="index.css">
 </head>
 
 <body id="body">
-    <img id = "play" src="/assets/play.png">
-    <div>
-        <h4>Objective</h4>
-        <p>In Dirty Seven card game players are required to get rid of all their cards before others. The game is played with a standard 52 card deck.</p>
-        <h4>Setup</h4>
-        <p><b>Player</b> - At the begining the two players are dealt 7 cards each. The players can see their own cards.</p>
-        <p><b>Top Stack</b> - One card is dealt face-up onto the current card stack pile.</p>
-        <p><b>Used Pile</b> - Remaining cards are set aside, resulting in a stock pile.</p>
-        <h4>Gameplay</h4>
-        <ul>
-            <li>In each turn player is supposed to discard one or more cards. If player has no matching card to throw, he/she must pick a card from the stock pile.</li>
-            <li>Player can discard a card only if it matches either the rank or the suit of the top card in the waste pile.</li>
-            <li>
-                Following additional rules are followed while discarding a card to the waste pile:
-                <ul>
-                    <li><b>Ace</b> - If an Ace is discarded, the next player loses its turn. In two player game, it means player who just discarded an Ace must again discard another card. This rule is different than the Three rule, since with Three rule player has option to not discard another card but in case of an Ace, player must discard another card or pick a card from the stock pile if he/she has no matching card to play.</li>
-                    <li><b>Seven</b> - The game is primarily named after this rule. If a player discards a seven, next player must also discard a seven. If he/she does not have a Seven to discard then he/she must pick four cards from the stock pile. Both players can discard Seven till one does not have a Seven to discard and has to pick 4 cards from the stock pile.</li>
-                    <li><b>Jack</b> - Jack works like a Joker and can be discarded any time except when a Seven was discarded in the previous turn. After discarding a Jack player must select next suit to play in the waste pile.</li>
-                </ul>
-            </li>
-            <li>After a player has picked four cards following Seven rule, next player is not required to discard another Seven and can just discard a card with matching suit/value.</li>
-            <li>Once all cards in the stock pile are finished, all cards in the waste pile except the top card are moved to the stock pile without shuffling.</li>
-        </ul>
-        <p>The game ends as soon as any player has discarded all of his/her cards.</p>
-        <h4>Controls</h4>
-        <ul>
-            <li>To play a card,click one of your cards once.</li>
-            <li>To discard your card to the waste pile, either drag and drop the card on top of the pile or, simply double-click the card.</li>
-        </ul>
+  <img id="play" src="/assets/play.png"  style="width: 50px; z-index:1; position: absolute;">
+  <button id="myBtn" style="left: 70px;z-index:1; position: absolute;">Open Modal</button>
+  <div id="myModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="close">&times;</span>
+        <h2>How to play</h2>
+      </div>
+      <h4>Objective</h4>
+      <p>In Dirty Seven card game players are required to get rid of all their cards before others. The game is played
+        with a standard 52 card deck.</p>
+      <h4>Setup</h4>
+      <p><b>Player</b> - At the begining the two players are dealt 7 cards each. The players can see their own cards.
+      </p>
+      <p><b>Top Stack</b> - One card is dealt face-up onto the current card stack pile.</p>
+      <p><b>Used Pile</b> - Remaining cards are set aside, resulting in a stock pile.</p>
+      <h4>Gameplay</h4>
+      <ul>
+        <li>In each turn player is supposed to discard one or more cards. If player has no matching card to throw,
+          he/she must pick a card from the stock pile.</li>
+        <li>Player can discard a card only if it matches either the rank or the suit of the top card in the waste pile.
+        </li>
+        <li>
+          Following additional rules are followed while discarding a card to the waste pile:
+          <ul>
+            <li><b>Ace</b> - If an Ace is discarded, the next player loses its turn. In two player game, it means player
+              who just discarded an Ace must again discard another card. This rule is different than the Three rule,
+              since with Three rule player has option to not discard another card but in case of an Ace, player must
+              discard another card or pick a card from the stock pile if he/she has no matching card to play.</li>
+            <li><b>Seven</b> - The game is primarily named after this rule. If a player discards a seven, next player
+              must also discard a seven. If he/she does not have a Seven to discard then he/she must pick four cards
+              from the stock pile. Both players can discard Seven till one does not have a Seven to discard and has to
+              pick 4 cards from the stock pile.</li>
+            <li><b>Jack</b> - Jack works like a Joker and can be discarded any time except when a Seven was discarded in
+              the previous turn. After discarding a Jack player must select next suit to play in the waste pile.</li>
+          </ul>
+        </li>
+        <li>After a player has picked four cards following Seven rule, next player is not required to discard another
+          Seven and can just discard a card with matching suit/value.</li>
+        <li>Once all cards in the stock pile are finished, all cards in the waste pile except the top card are moved to
+          the stock pile without shuffling.</li>
+      </ul>
+      <p>The game ends as soon as any player has discarded all of his/her cards.</p>
+      <h4>Controls</h4>
+      <ul>
+        <li>To play a card,click one of your cards once.</li>
+        <li>To discard your card to the waste pile, either drag and drop the card on top of the pile or, simply
+          double-click the card.</li>
+      </ul>
     </div>
-    <ul id="messages"></ul>
-    <form action="/" method="POST" id="chatForm">
-      <input id="txt" autocomplete="off" autofocus="on" oninput="" placeholder="type your message here..." /><button>Send</button>
-    </form>
+  </div>
+  <div class="row">
+    <div id="parent_canvas" class="column left" style="height: 100vh;">
+      <canvas id="main_canvas_view" width="" height=""></canvas>
+    </div>
+    <div class="column right">
+      <ul id="messages"></ul>
+      <form action="/" method="POST" id="chatForm">
+        <input id="txt" autocomplete="off" autofocus="on" oninput=""
+          placeholder="type your message here..." /><button>Send</button>
+      </form>
+    </div>
     <script>
-            var socket = io.connect('http://localhost:8080');
+      var socket = io.connect('http://localhost:8080');
 
-            // submit text message without reload/refresh the page
-            $('form').submit(function(e){
-                e.preventDefault(); // prevents page reloading
-                socket.emit('chat_message', $('#txt').val());
-                $('#txt').val('');
-                return false;
-            });
+      // submit text message without reload/refresh the page
+      $('form').submit(function (e) {
+        e.preventDefault(); // prevents page reloading
+        socket.emit('chat_message', $('#txt').val());
+        $('#txt').val('');
+        return false;
+      });
 
-            // append the chat text message
-            socket.on('chat_message', function(msg){
-                $('#messages').append($('<li>').html(msg));
-            });
+      // append the chat text message
+      socket.on('chat_message', function (msg) {
+        $('#messages').append($('<li>').html(msg));
+      });
 
-            // append text if someone is online
-            socket.on('is_online', function(username) {
-                $('#messages').append($('<li>').html(username));
-            });
+      // append text if someone is online
+      socket.on('is_online', function (username) {
+        $('#messages').append($('<li>').html(username));
+      });
 
-            // ask username
-            var username = prompt('Please tell me your name');
-            socket.emit('username', username);
-
+      // ask username
+      var username = prompt('Please tell me your name');
+      socket.emit('username', username);
     </script>
-    <canvas id="main_canvas_view" width="auto" height="auto"></canvas>
+  </div>
 </body>
 
 </html>

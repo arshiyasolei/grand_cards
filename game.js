@@ -2,9 +2,10 @@ window.onload = function () {
   // get canvas related references
   let canvas = document.getElementById("main_canvas_view");
   let ctx = canvas.getContext("2d");
+  modal_on_load()
 
-  ctx.canvas.width = window.innerWidth;
-  ctx.canvas.height = window.innerHeight;
+  ctx.canvas.width = canvas.parentElement.clientWidth
+  ctx.canvas.height = canvas.parentElement.clientHeight
   
   let cards_left = new card_stack();
   cards_left.shuffle()
