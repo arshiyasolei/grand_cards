@@ -1,5 +1,9 @@
 #main_canvas_view {
+  margin: 0em;
     background: url('assets/wood_top.jpg');
+}
+body {
+  margin: 0em;
 }
 
 /* Set additional styling options for the columns */
@@ -13,8 +17,11 @@ width: 80%;
 }
 
 .right {
+position: relative;
 width: 20%;
-
+height: 100vh;
+padding-left: 1%;
+box-sizing: border-box;
 }
 
 .row:after {
@@ -91,4 +98,15 @@ clear: both;
     padding: 2px 16px;
     background-color: #5cb85c;
     color: white;
+  }
+
+  #chatForm {
+    position: absolute;
+    bottom: 3%;
+    float: left;
+    box-sizing: border-box;
+    width: 100%;
+  }
+  #txt {
+    width: 70%;
   }

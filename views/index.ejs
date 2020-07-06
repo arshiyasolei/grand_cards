@@ -14,12 +14,17 @@
   <script src="../../audio.js" defer></script>
   <script src="../../socket.io/socket.io.js"></script>
   <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+  <!-- Halfmoon CSS -->
+  <link href="https://cdn.jsdelivr.net/gh/halfmoonui/halfmoon@1.0.1/css/halfmoon.min.css" rel="stylesheet" />
+
+  <!-- Halfmoon JS -->
+  <script src="https://cdn.jsdelivr.net/gh/halfmoonui/halfmoon@1.0.1/js/halfmoon.min.js"></script>
   <link rel="stylesheet" type="text/css" href="index.css">
 </head>
 
 <body id="body">
   <img id="play" src="/assets/play.png"  style="width: 50px; z-index:1; position: absolute;">
-  <button id="myBtn" style="left: 70px;z-index:1; position: absolute;">Open Modal</button>
+  <button id="myBtn" class="btn" style="height: 50px; left: 70px;z-index:1; position: absolute;">How to play</button>
   <div id="myModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -76,8 +81,11 @@
     <div class="column right">
       <ul id="messages"></ul>
       <form action="/" method="POST" id="chatForm">
-        <input id="txt" autocomplete="off" autofocus="on" oninput=""
-          placeholder="type your message here..." /><button>Send</button>
+        <div class="row">
+        <input class="form-control" id="txt" autocomplete="off" autofocus="on" oninput=""
+          placeholder="type your message here..." />
+          <button type="submit" class="btn btn-primary">Send</button>
+        </div>
       </form>
     </div>
     <script>

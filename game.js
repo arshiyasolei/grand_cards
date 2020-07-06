@@ -6,7 +6,7 @@ window.onload = function () {
 
   ctx.canvas.width = canvas.parentElement.clientWidth
   ctx.canvas.height = canvas.parentElement.clientHeight
-  
+  document.getElementsByClassName("right").height = canvas.parentElement.clientHeight
   let cards_left = new card_stack();
   cards_left.shuffle()
   let player_count = 2;
