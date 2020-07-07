@@ -102,6 +102,7 @@ clear: both;
 
   #chatForm {
     position: absolute;
+    
     bottom: 3%;
     float: left;
     box-sizing: border-box;
