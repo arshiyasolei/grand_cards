@@ -9,7 +9,6 @@
   <script src="../../card_stack.js"></script>
   <script src="../../players.js"></script>
   <script src="../../game_tutorial.js"></script>
-  <script src="../../card.js"></script>
   <script src="../../leaderboard.js"></script>
   <script src="../../audio.js" defer></script>
   <script src="../../socket.io/socket.io.js"></script>
@@ -78,7 +77,7 @@
     <div id="parent_canvas" class="column left" style="height: 100vh;">
       <canvas id="main_canvas_view" width="" height=""></canvas>
     </div>
-    <div class="column right">
+    <div id="messages_section" class="column right">
       <ul id="messages"></ul>
       <form action="/" method="POST" id="chatForm">
         <div class="row">

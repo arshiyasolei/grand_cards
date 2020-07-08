@@ -10,8 +10,20 @@ window.onload = function () {
   });
 
   // append the chat text message
+  let first_time = true
   socket.on('chat_message', function (msg) {
     $('#messages').append($('<li>').html(msg));
+    let container = document.getElementById("messages")
+    console.log(container.clientHeight,container.scrollHeight,container.scrollTop)
+    if (first_time) {
+      
+      container.scrollTop = 200;
+      console.log(container.scrollTop)
+      first_time = false;
+    } else if (container.clientHeight <= container.scrollHeight) {
+      console.log("I got triggered")
+      container.scrollTop = container.scrollHeight;
+    }
   });
 
   // append text if someone is online
