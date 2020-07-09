@@ -1,5 +1,7 @@
+var socket
 window.onload = function () {
-  let socket = io.connect('http://localhost:8080');
+  console.log(document.location.origin + ":8080")
+  socket = io.connect(document.location.origin);
 
   // submit text message without reload/refresh the page
   $('form').submit(function (e) {
@@ -8,7 +10,15 @@ window.onload = function () {
     $('#txt').val('');
     return false;
   });
-
+  //send move to player2
+  socket.on('player1 move', function (username) {
+    socket.emit('player1 move', $('#txt').val());
+  });
+  //send move to player1
+  socket.on('player2 move', function (username) {
+    socket.emit('chat_message', $('#txt').val());
+  });
+  
   // append the chat text message
   let first_time = true
   socket.on('chat_message', function (msg) {
@@ -37,11 +47,26 @@ window.onload = function () {
   // get canvas related references
   let canvas = document.getElementById("main_canvas_view");
   let ctx = canvas.getContext("2d");
+
+  //loads the "how to play" modal
   modal_on_load()
 
+  //width of canvas
   ctx.canvas.width = canvas.parentElement.clientWidth
   ctx.canvas.height = canvas.parentElement.clientHeight
+  //sets the height of scroll of the chat area
   document.getElementsByClassName("right").height = canvas.parentElement.clientHeight
+
+  var player_num;
+  // set player number
+  socket.on('player_num', function (num) {
+    player_num = num;
+  });
+
+  // when we have two connections
+  socket.on('got all players', function (arr) {
+    player_num = arr;
+  });
   let cards_left = new card_stack();
   cards_left.shuffle()
   let player_count = 2;
@@ -61,16 +86,48 @@ window.onload = function () {
   //load all images
   // listen for mouse events
   let over_valid_card = [1]
-  game(ctx, canvas, over_valid_card, players, cards_left, over_valid_card, back_img);
-  //draw(ctx,players);
 
-}
-
-function game(ctx, canvas, over_valid_card, players, cards_left, over_valid_card, back_img) {
+  //top card on stack
   let top_card = [cards_left.cards.pop()]
   console.log(cards_left.cards)
-  setTimeout(() => {
 
+
+  socket.on('player add card', function (arr) {
+    let move = {
+      username: username,
+    }
+    if (arr.username == move.username){
+      socket.emit('player add card', move);
+      players[over_valid_card[0]].cards.push(arr)
+    } else {
+      //update player 2 hands view
+    }
+  });
+
+  socket.on('player move', function (arr) {
+    let move = {
+      username: username,
+    }
+    if (arr.username == move.username){
+      socket.emit('player move', move);
+      players[over_valid_card[0]].cards.push(arr)
+    } else {
+      //update player 2 hands view
+    }
+  });
+  //starts the game!
+  game(ctx, canvas, over_valid_card, players, cards_left, over_valid_card, back_img,top_card);
+  //resize canvas and the whole window
+  window.addEventListener('resize', () => {
+    ctx.canvas.width = canvas.parentElement.clientWidth
+    ctx.canvas.height = canvas.parentElement.clientHeight
+    draw(ctx, players, back_img, cards_left.cards.length, top_card);
+  });
+}
+
+function game(ctx, canvas, over_valid_card, players, cards_left, over_valid_card, back_img,top_card) {
+
+  setTimeout(() => {
     draw(ctx, players, back_img, cards_left.cards.length, top_card);
   }, 400);
 
@@ -84,7 +141,15 @@ function add_extra_to_hand(ctx, canvas, over_valid_card, players, back_img, card
   return function () {
     if (cards_left.cards.length > 0) {
       //console.log(cards_left.cards[cards_left.cards.length-1])
-      players[over_valid_card[0]].cards.push(cards_left.cards.pop())
+      let move = {
+        username: username,
+      }
+      socket.emit('player add card', move);
+      socket.on('player add card', function (arr) {
+        
+        players[over_valid_card[0]].cards.push(arr)
+      });
+      //players[over_valid_card[0]].cards.push(cards_left.cards.pop())
     }
   };
 }
@@ -188,22 +253,35 @@ function mouse_up(ctx, canvas, over_valid_card, players, back_img, cards_left, t
     mouse_y = m[1];
     back_img_rangey = ctx.canvas.height / 2 - back_img.height / 2;
     back_img_rangex = ctx.canvas.width / 2 - back_img.width
+
     if ((back_img_rangex < mouse_x && mouse_x < back_img_rangex + back_img.width) && (back_img_rangey < mouse_y && mouse_y < back_img_rangey + back_img.height)) {
       console.log("in the zone of adding pile")
-      add_extra_to_hand(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card)();
+      let move = {
+        username: username,
+      }
+      socket.emit('player add card', move);
+      //add_extra_to_hand(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card)();
+
     }
     if (check_card_nodraw_needed(players, over_valid_card, cards_left, top_card, ctx, canvas, back_img)) {
       for (let i = 0; i < players[over_valid_card[0]].cards.length; i++) {
 
         if (players[over_valid_card[0]].cards[i][3] < mouse_x && mouse_x < players[over_valid_card[0]].cards[i][4]) {
           if (players[over_valid_card[0]].cards[i][5] < mouse_y && mouse_y < players[over_valid_card[0]].cards[i][6]) {
+            
             let player_card_val = players[over_valid_card[0]].cards[i][1]
             let player_card_type = players[over_valid_card[0]].cards[i][2]
+            
             if (top_card[0][1] == player_card_val || top_card[0][2] == player_card_type) {
               //add to the top
+              //cards_left.cards.push(top_card[0])
+              let move = {
+                username: username,
+                old_top_card: top_card[0],
+                new_top_card: players[over_valid_card[0]].cards[i]
 
-              cards_left.cards.push(top_card[0])
-
+              }
+              socket.emit('player move', move);
               //animates the top card movement
               animate_in_line(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card,players[over_valid_card[0]].cards[i]) 
               //cards_left.cards.push(top_card[0])
@@ -245,7 +323,7 @@ function mouse_move(ctx, canvas, over_valid_card, players, back_img, cards_left,
   };
 
 }
-
+//gets the coordinates of mouse
 function get_mouse_position(canvas, evt) {
   let rect = canvas.getBoundingClientRect();
   return {
@@ -254,6 +332,7 @@ function get_mouse_position(canvas, evt) {
   };
 }
 
+//checks if there is a draw that's needed
 function check_card_nodraw_needed(players, over_valid_card, cards_left, top_card, ctx, canvas, back_img) {
 
   let draw_needed = 1;
@@ -312,12 +391,14 @@ function check_win(players, over_valid_card) {
     if (players[i].cards.length == 0) {
       i.toString()
       alert("player_" + i + " WON")
+      socket.emit('game over', "game over!");
       return true
     }
   }
 
 }
 
+//used for drawing round rectangles
 CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
   if (w < 2 * r) r = w / 2;
   if (h < 2 * r) r = h / 2;
