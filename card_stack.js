@@ -1,7 +1,7 @@
 //Representing a Stack/list of cards with shuffling
 class card_stack {
     constructor() {
-      this.cards = [];
+      this.cards = {};
       //goal to create all images as objects
         let card_types = ["clubs","diamonds","spades","hearts"];
         let aceme = ["A","J","K","Q"];
@@ -12,14 +12,10 @@ class card_stack {
                 let img = new Image("145.2","204");
                 let tempi = i;
                 tempi.toString;
-                img.onload = function () {
-                    img.style.border='medium solid blue';
-                }
-                img.style.border='medium solid blue';
                 img.src = "assets/png/" +card_t + "_" +tempi + ".png";
                 //console.log("assets/png/" + tempi + "_of_" + card_t + ".png")
                 let res = [img,i,card_t,null,null]
-                this.cards.push(res)
+                this.cards["assets/png/" +card_t + "_" +tempi + ".png"] = img
             }
             for (let i of aceme){
                 //Get image here
@@ -31,7 +27,7 @@ class card_stack {
                 }
                 img.src = "assets/png/" +card_t + "_" +tempi + ".png";
                 let res = [img,i,card_t,null,null]
-                this.cards.push(res)
+                this.cards["assets/png/" +card_t + "_" +tempi + ".png"] = img
             }
     }
 

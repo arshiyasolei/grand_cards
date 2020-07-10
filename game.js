@@ -1,22 +1,17 @@
 var socket
+var username
+var all_cards
+var my_turn
 window.onload = function () {
   console.log(document.location.origin + ":8080")
   socket = io.connect(document.location.origin);
-
+  all_cards = new card_stack()
   // submit text message without reload/refresh the page
   $('form').submit(function (e) {
     e.preventDefault(); // prevents page reloading
     socket.emit('chat_message', $('#txt').val());
     $('#txt').val('');
     return false;
-  });
-  //send move to player2
-  socket.on('player1 move', function (username) {
-    socket.emit('player1 move', $('#txt').val());
-  });
-  //send move to player1
-  socket.on('player2 move', function (username) {
-    socket.emit('chat_message', $('#txt').val());
   });
   
   // append the chat text message
@@ -36,14 +31,49 @@ window.onload = function () {
     }
   });
 
+  socket.on('turn', function (t) {
+    my_turn = t;
+  });
+
+
   // append text if someone is online
   socket.on('is_online', function (username) {
     $('#messages').append($('<li>').html(username));
   });
-
+  let players = [34,44]
+  let back_img = new Image("145.2", "204");
+  back_img.src = "assets/png/back_dark" + ".png";
   // ask username
-  var username = prompt('Please tell me your name');
+  username = prompt('Please tell me your name');
   socket.emit('username', username);
+
+  let cards_left = []
+  let top_card = [1]
+  socket.on('give player cards', function (playere,give_card,top_cards) {
+    players[0] = playere;
+    cards_left.push(give_card);
+    console.log(top_cards)
+    let top_img = new Image("145.2","204");
+    top_img.src = "assets/png/" + top_cards[2] + "_" + top_cards[1] + ".png";
+    top_card[0] = top_cards;
+    top_card[0][0] = top_img;
+    let player_count = 2;
+
+    for (let idx = 0; idx < 7; idx++) {
+      let img = new Image("145.2","204");
+      img.src = "assets/png/" +players[0].cards[idx][2] + "_" + players[0].cards[idx][1] + ".png";
+      players[0].cards[idx][0] = img;
+    
+    }
+    players[1] = new player([])
+    for (let idx = 0; idx < 7; idx++) {
+      console.log(players[1])
+      players[1].cards.push([back_img,null,null,null,null])
+      
+    }
+
+  });
+  
   // get canvas related references
   let canvas = document.getElementById("main_canvas_view");
   let ctx = canvas.getContext("2d");
@@ -57,51 +87,40 @@ window.onload = function () {
   //sets the height of scroll of the chat area
   document.getElementsByClassName("right").height = canvas.parentElement.clientHeight
 
-  var player_num;
-  // set player number
-  socket.on('player_num', function (num) {
-    player_num = num;
-  });
-
-  // when we have two connections
-  socket.on('got all players', function (arr) {
-    player_num = arr;
-  });
-  let cards_left = new card_stack();
-  cards_left.shuffle()
-  let player_count = 2;
-  let players = []
-  for (let i = 1; i <= player_count; i++) {
-    player_cards = []
-    for (let idx = 0; idx < 7; idx++) {
-      player_cards.push(cards_left.cards.pop())
-    }
-    players.push(new player(player_cards))
-  }
-
-  let back_img = new Image("145.2", "204");
-  back_img.src = "assets/png/back_dark" + ".png";
-
   //pick first
   //load all images
   // listen for mouse events
-  let over_valid_card = [1]
-
-  //top card on stack
-  let top_card = [cards_left.cards.pop()]
-  console.log(cards_left.cards)
-
+  let over_valid_card = [0]
+  var whos_turn;
 
   socket.on('player add card', function (arr) {
     let move = {
       username: username,
     }
     if (arr.username == move.username){
-      socket.emit('player add card', move);
-      players[over_valid_card[0]].cards.push(arr)
+      socket.emit('player update add card', move);
+      console.log("card added to me!",arr.new_card);
+      console.log(all_cards.cards["assets/png/" + arr.new_card[2] + "_" + arr.new_card[1] + ".png"])
+      arr.new_card[0] = all_cards.cards["assets/png/" + arr.new_card[2] + "_" + arr.new_card[1] + ".png"]
+      players[over_valid_card[0]].cards.push(arr.new_card)
+      draw(ctx, players, back_img, cards_left.length, top_card);
+
     } else {
       //update player 2 hands view
+      //whos_turn = arr.whos_turn
+      //top_card[0] = arr.top_card
+      //cards_left[0] = arr.cards_left
     }
+  });
+  socket.on('player update add card',function (newlen){
+    if (newlen == 0){
+      if (cards_left.length != 0){
+        cards_left.pop()
+      }
+    }
+    //push one two the other hand
+    players[1].cards.push([back_img,null,null,null,null])
+    draw(ctx, players, back_img, cards_left.length, top_card);
   });
 
   socket.on('player move', function (arr) {
@@ -109,26 +128,32 @@ window.onload = function () {
       username: username,
     }
     if (arr.username == move.username){
-      socket.emit('player move', move);
-      players[over_valid_card[0]].cards.push(arr)
+      //socket.emit('player move', move);
+      whos_turn = arr.whos_turn
+      //players[over_valid_card[0]].cards.push(arr.top_card)
     } else {
+      whos_turn = arr.whos_turn
+      top_card[0] = arr.top_card
+      cards_left[0] = arr.cards_left
       //update player 2 hands view
     }
   });
   //starts the game!
+  console.log(top_card)
+
   game(ctx, canvas, over_valid_card, players, cards_left, over_valid_card, back_img,top_card);
   //resize canvas and the whole window
   window.addEventListener('resize', () => {
     ctx.canvas.width = canvas.parentElement.clientWidth
     ctx.canvas.height = canvas.parentElement.clientHeight
-    draw(ctx, players, back_img, cards_left.cards.length, top_card);
+    draw(ctx, players, back_img, cards_left.length, top_card);
   });
 }
 
 function game(ctx, canvas, over_valid_card, players, cards_left, over_valid_card, back_img,top_card) {
 
   setTimeout(() => {
-    draw(ctx, players, back_img, cards_left.cards.length, top_card);
+    draw(ctx, players, back_img, cards_left.length, top_card);
   }, 400);
 
   canvas.onmousedown = mouse_down(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card);
@@ -172,7 +197,7 @@ function animate_in_line(ctx, canvas, over_valid_card, players, back_img, cards_
   
   //elegent equation for doing this
   let current_top = top_card
-  let cards_left_len = cards_left.cards.length
+  let cards_left_len = cards_left.length
   let x_point = card_to_animate[3]
   let y_point = card_to_animate[5]
   let top_img_pointx = ctx.canvas.width / 2 - back_img.width + current_top[0][0].width + 30
@@ -248,72 +273,63 @@ function animate_in_line(ctx, canvas, over_valid_card, players, back_img, cards_
 //and the play was valid, remove card from player stack!
 function mouse_up(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card) {
   return function (e) {
-    let m = get_mouse_position(canvas, e)
-    mouse_x = m[0];
-    mouse_y = m[1];
-    back_img_rangey = ctx.canvas.height / 2 - back_img.height / 2;
-    back_img_rangex = ctx.canvas.width / 2 - back_img.width
+    if (my_turn){
+      let m = get_mouse_position(canvas, e)
+      mouse_x = m[0];
+      mouse_y = m[1];
+      back_img_rangey = ctx.canvas.height / 2 - back_img.height / 2;
+      back_img_rangex = ctx.canvas.width / 2 - back_img.width
 
-    if ((back_img_rangex < mouse_x && mouse_x < back_img_rangex + back_img.width) && (back_img_rangey < mouse_y && mouse_y < back_img_rangey + back_img.height)) {
-      console.log("in the zone of adding pile")
-      let move = {
-        username: username,
+      if ((back_img_rangex < mouse_x && mouse_x < back_img_rangex + back_img.width) && (back_img_rangey < mouse_y && mouse_y < back_img_rangey + back_img.height)) {
+        console.log("in the zone of adding pile",username)
+        let move = {
+          username: username
+        }
+        socket.emit('player add card', move);
+        console.log("added supposedly")
+        //add_extra_to_hand(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card)();
+
       }
-      socket.emit('player add card', move);
-      //add_extra_to_hand(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card)();
+      if (check_card_nodraw_needed(players, over_valid_card, cards_left, top_card, ctx, canvas, back_img)) {
+        for (let i = 0; i < players[over_valid_card[0]].cards.length; i++) {
 
-    }
-    if (check_card_nodraw_needed(players, over_valid_card, cards_left, top_card, ctx, canvas, back_img)) {
-      for (let i = 0; i < players[over_valid_card[0]].cards.length; i++) {
+          if (players[over_valid_card[0]].cards[i][3] < mouse_x && mouse_x < players[over_valid_card[0]].cards[i][4]) {
+            if (players[over_valid_card[0]].cards[i][5] < mouse_y && mouse_y < players[over_valid_card[0]].cards[i][6]) {
+              
+              let player_card_val = players[over_valid_card[0]].cards[i][1]
+              let player_card_type = players[over_valid_card[0]].cards[i][2]
+              
+              if (top_card[0][1] == player_card_val || top_card[0][2] == player_card_type) {
+                //add to the top
+                //cards_left.cards.push(top_card[0])
+                let move = {
+                  username: username,
+                  old_top_card: top_card[0],
+                  i: i
+                }
+                socket.emit('player move', move);
+                //animates the top card movement
+                animate_in_line(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card,players[over_valid_card[0]].cards[i]) 
+                //cards_left.cards.push(top_card[0])
+                top_card[0] = players[over_valid_card[0]].cards[i]
+                //removes card from player sta∂ck
+                players[over_valid_card[0]].cards.splice(i, 1)
+                //console.log(players[over_valid_card[0]].cards)
 
-        if (players[over_valid_card[0]].cards[i][3] < mouse_x && mouse_x < players[over_valid_card[0]].cards[i][4]) {
-          if (players[over_valid_card[0]].cards[i][5] < mouse_y && mouse_y < players[over_valid_card[0]].cards[i][6]) {
-            
-            let player_card_val = players[over_valid_card[0]].cards[i][1]
-            let player_card_type = players[over_valid_card[0]].cards[i][2]
-            
-            if (top_card[0][1] == player_card_val || top_card[0][2] == player_card_type) {
-              //add to the top
-              //cards_left.cards.push(top_card[0])
-              let move = {
-                username: username,
-                old_top_card: top_card[0],
-                new_top_card: players[over_valid_card[0]].cards[i]
-
+                break;
               }
-              socket.emit('player move', move);
-              //animates the top card movement
-              animate_in_line(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card,players[over_valid_card[0]].cards[i]) 
-              //cards_left.cards.push(top_card[0])
-              top_card[0] = players[over_valid_card[0]].cards[i]
-              //removes card from player sta∂ck
-              players[over_valid_card[0]].cards.splice(i, 1)
-              //console.log(players[over_valid_card[0]].cards)
-              if (over_valid_card[0] == 1) {
-                over_valid_card[0] = 0;
-              } else {
-                over_valid_card[0] = 1;
-              }
-              break;
             }
           }
         }
-      }
 
-      temp = [0]
-      if (over_valid_card[0] == 1) {
-        temp[0] = 0;
+        //check_win(players, temp)
       } else {
-        temp[0] = 1;
+        console.log("add cards from the other pile!")
+        //for something else
       }
-      check_win(players, temp)
-    } else {
-      console.log("add cards from the other pile!")
-      //for something else
+      draw(ctx, players, back_img, cards_left.length, top_card);
+      console.log(top_card[0][1])
     }
-    draw(ctx, players, back_img, cards_left.cards.length, top_card);
-    console.log(top_card[0][1])
-
   };
 }
 //might be used in the future
@@ -381,7 +397,7 @@ function check_card_nodraw_needed(players, over_valid_card, cards_left, top_card
     
   }
   */
-  draw(ctx, players, back_img, cards_left.cards.length, top_card);
+  draw(ctx, players, back_img, cards_left.length, top_card);
   return false;
 }
 //wind conditions function
@@ -423,7 +439,7 @@ function draw(ctx, players, back_img, cards_left_len, current_top) {
 
   }
   if (current_top) {
-
+    console.log(current_top)
     ctx.drawImage(current_top[0][0], temp_width + current_top[0][0].width + 30, ctx.canvas.height / 2 - current_top[0][0].height / 2, current_top[0][0].width, current_top[0][0].height);
 
   }
@@ -449,6 +465,7 @@ function draw(ctx, players, back_img, cards_left_len, current_top) {
       ctx.lineWidth = 2;
       players[i].cards[vals][4] = g + 50
       if (players[i].cards.length == 1 || players[i].cards.length - 1 == vals) {
+        console.log(players[i].cards[vals][0],vals,players[0])
         players[i].cards[vals][4] = g + players[i].cards[vals][0].width
       }
   
