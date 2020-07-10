@@ -92,13 +92,16 @@ io.sockets.on('connection', function(socket) {
             } else {
                 user_arr.push([username,Object.keys(room.sockets)[0]])
             }
-
+            whos_turn = 0
+            io.to(user_arr[1][1]).emit('turn', whos_turn);
             io.to(user_arr[1][1]).emit('give player cards', players[1],cards_left[cards_left.length-1],top_card[0]);
         } else {
             socket.emit('player_num',0)
             
             user_arr.push([username,Object.keys(room.sockets)[0]])
-            whos_turn = 0;
+            whos_turn = 1;
+
+            io.to(user_arr[0][1]).emit('turn', whos_turn);
             io.to(user_arr[0][1]).emit('give player cards', players[0],cards_left[cards_left.length-1],top_card[0]);
         }
         console.log("connection!");
@@ -114,70 +117,81 @@ io.sockets.on('connection', function(socket) {
         io.emit('chat_message', '<strong>' + socket.username + '</strong>: ' + message);
     });
     
-        //card logic
-        console.log(room)
-        //needs to hide the extra stack + other player cards
-        //generate other player cards on their side
-        //pass around content via strings (or arrays)
-        socket.on('player move', function(move) {
-            //update the given player and then emit to the other one
-            if (move.username == user_arr[0][0]) {
-                let i = move.i
-                top_card[0] = players[0].cards[i]
-                //removes card from player sta∂ck
-                players[0].cards.splice(i, 1)
-                whos_turn = 1;
-                move = {
-                    username: user_arr[1][0],
-                    whos_turn: whos_turn,
-                    top_card: top_card[0]
-                }
-                io.to(user_arr[1][1]).emit('player move', move);
-            } else {
-                let i = move.i
-                top_card[0] = players[1].cards[i]
-                //removes card from player sta∂ck
-                players[1].cards.splice(i, 1)
-                whos_turn = 0;
-                move = {
-                    username: user_arr[0][0],
-                    whos_turn: whos_turn,
-                    top_card: top_card[0]
-                }
-                io.to(user_arr[0][1]).emit('player move', move);
+    //card logic
+    console.log(room)
+    //needs to hide the extra stack + other player cards
+    //generate other player cards on their side
+    //pass around content via strings (or arrays)
+    socket.on('player move', function(move) {
+        //update the given player and then emit to the other one
+        if (move.username == user_arr[0][0]) {
+            console.log("player1 fired")
+            let i = move.i
+            cards_left.cards.push(top_card[0])
+            top_card[0] = players[0].cards[i]
+            //removes card from player sta∂ck
+            players[0].cards.splice(i, 1)
+            //whos_turn = 1;
+            move = {
+                username: user_arr[1][0],
+                top_card: top_card[0],
+                cards_left: cards_left.cards[cards_left.cards.length-1]
             }
-            //io.emit('player1 moves', move);
-        });
-        console.log("I am listening to add cards now")
-        socket.on('player add card', function(move) {
-            console.log(user_arr[0][0],move.username)
-            if (move.username == user_arr[0][0]) {
-                //check if cards_left is 0
-                move.new_card = cards_left.cards.pop()
-                io.to(user_arr[0][1]).emit('player add card', move);
-            } else {
-                move.new_card = cards_left.cards.pop()
-                io.to(user_arr[1][1]).emit('player add card', move);
+            io.to(user_arr[1][1]).emit('player move', move);
+            io.to(user_arr[1][1]).emit('turn', 1);
+            io.to(user_arr[0][1]).emit('turn', 0);
+        } else {
+            console.log("player2 fired")
+            let i = move.i
+            cards_left.cards.push(top_card[0])
+            top_card[0] = players[1].cards[i]
+            console.log(top_card[0])
+            //removes card from player sta∂ck
+            players[1].cards.splice(i, 1)
+            //whos_turn = 1;
+            move = {
+                username: user_arr[0][0],
+                top_card: top_card[0],
+                cards_left: cards_left.cards[cards_left.cards.length-1]
             }
-            //io.emit('player2 moves', move);
-        });
-        socket.on('player update add card', function(move) {
-            if (move.username == user_arr[0][0]) {
-                //check if cards_left is 0
-                //move.new_card = cards_left.cards.pop()
-                io.to(user_arr[1][1]).emit('player update add card', cards_left.cards.length);
-            } else {
-                //cards_left.cards.length.new_card = cards_left.cards.pop()
-                io.to(user_arr[0][1]).emit('player update add card', cards_left.cards.length);
-            }
-            //io.emit('player2 moves', move);
-        });
+            io.to(user_arr[0][1]).emit('player move', move);
+            io.to(user_arr[0][1]).emit('turn', 1);
+            io.to(user_arr[1][1]).emit('turn', 0);
+        }
+        //io.emit('player1 moves', move);
+    });
+    console.log("I am listening to add cards now")
+    socket.on('player add card', function(move) {
+        console.log(user_arr[0][0],move.username)
+        if (move.username == user_arr[0][0]) {
+            //check if cards_left is 0
+            move.new_card = cards_left.cards.pop()
+            players[0].cards.push(move.new_card)
+            io.to(user_arr[0][1]).emit('player add card', move);
+        } else {
+            move.new_card = cards_left.cards.pop()
+            players[1].cards.push(move.new_card)
+            io.to(user_arr[1][1]).emit('player add card', move);
+        }
+        //io.emit('player2 moves', move);
+    });
+    socket.on('player update add card', function(move) {
+        if (move.username == user_arr[0][0]) {
+            //check if cards_left is 0
+            //move.new_card = cards_left.cards.pop()
+            io.to(user_arr[1][1]).emit('player update add card', cards_left.cards.length);
+        } else {
+            //cards_left.cards.length.new_card = cards_left.cards.pop()
+            io.to(user_arr[0][1]).emit('player update add card', cards_left.cards.length);
+        }
+        //io.emit('player2 moves', move);
+    });
 
-        socket.on('game over', function(move) {
-            //io.to(user_arr[1][1]).emit('give player cards', move);
-            //io.to(user_arr[0][1]).emit('give player cards', move);
-            io.emit('game over', "game over!");
-        });
+    socket.on('game over', function(move) {
+        //io.to(user_arr[1][1]).emit('give player cards', move);
+        //io.to(user_arr[0][1]).emit('give player cards', move);
+        io.emit('game over', "game over!");
+    });
 
     }
 

@@ -35,7 +35,6 @@ window.onload = function () {
     my_turn = t;
   });
 
-
   // append text if someone is online
   socket.on('is_online', function (username) {
     $('#messages').append($('<li>').html(username));
@@ -129,12 +128,19 @@ window.onload = function () {
     }
     if (arr.username == move.username){
       //socket.emit('player move', move);
-      whos_turn = arr.whos_turn
+      //whos_turn = arr.whos_turn
       //players[over_valid_card[0]].cards.push(arr.top_card)
-    } else {
-      whos_turn = arr.whos_turn
+      console.log("I got fired")
       top_card[0] = arr.top_card
-      cards_left[0] = arr.cards_left
+      
+      //cards_left[0] = arr.cards_left
+      arr.top_card[0] = all_cards.cards["assets/png/" + arr.top_card[2] + "_" + arr.top_card[1] + ".png"]
+      //arr.new_card[0] = all_cards.cards["assets/png/" + arr.new_card[2] + "_" + arr.new_card[1] + ".png"]
+      draw(ctx, players, back_img, cards_left.length, top_card);
+    } else {
+      //whos_turn = arr.whos_turn
+      //top_card[0] = arr.top_card
+      //cards_left[0] = arr.cards_left
       //update player 2 hands view
     }
   });
@@ -304,7 +310,7 @@ function mouse_up(ctx, canvas, over_valid_card, players, back_img, cards_left, t
                 //cards_left.cards.push(top_card[0])
                 let move = {
                   username: username,
-                  old_top_card: top_card[0],
+                  new_top_card: players[over_valid_card[0]].cards[i],
                   i: i
                 }
                 socket.emit('player move', move);
@@ -315,7 +321,7 @@ function mouse_up(ctx, canvas, over_valid_card, players, back_img, cards_left, t
                 //removes card from player sta∂ck
                 players[over_valid_card[0]].cards.splice(i, 1)
                 //console.log(players[over_valid_card[0]].cards)
-
+                
                 break;
               }
             }
