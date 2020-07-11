@@ -119,6 +119,8 @@ window.onload = function () {
     }
     //push one two the other hand
     players[0].cards.push([back_img,null,null,null,null])
+    //animate other player hand
+    //animate_in_line(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card,card_to_animate)
     draw(ctx, players, back_img, cards_left.length, top_card);
   });
 
