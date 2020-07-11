@@ -135,6 +135,7 @@ window.onload = function () {
       
       //cards_left[0] = arr.cards_left
       arr.top_card[0] = all_cards.cards["assets/png/" + arr.top_card[2] + "_" + arr.top_card[1] + ".png"]
+      players[1].cards.pop()
       //arr.new_card[0] = all_cards.cards["assets/png/" + arr.new_card[2] + "_" + arr.new_card[1] + ".png"]
       draw(ctx, players, back_img, cards_left.length, top_card);
     } else {
@@ -144,6 +145,11 @@ window.onload = function () {
       //update player 2 hands view
     }
   });
+  socket.on('game over', function(status) {
+    alert(status)
+    //reset game
+    //io.to(user_arr[0][1]).emit('give player cards', move);
+});
   //starts the game!
   console.log(top_card)
 

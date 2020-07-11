@@ -119,6 +119,7 @@ io.sockets.on('connection', function(socket) {
     
     //card logic
     console.log(room)
+
     //needs to hide the extra stack + other player cards
     //generate other player cards on their side
     //pass around content via strings (or arrays)
@@ -158,6 +159,11 @@ io.sockets.on('connection', function(socket) {
             io.to(user_arr[0][1]).emit('turn', 1);
             io.to(user_arr[1][1]).emit('turn', 0);
         }
+        if (players[1].cards.length == 0){
+            io.emit('game over', "player 2 won");
+        } else if (players[0].cards.length == 0){
+            io.emit('game over', "player 1 won");
+        }
         //io.emit('player1 moves', move);
     });
     console.log("I am listening to add cards now")
@@ -187,11 +193,7 @@ io.sockets.on('connection', function(socket) {
         //io.emit('player2 moves', move);
     });
 
-    socket.on('game over', function(move) {
-        //io.to(user_arr[1][1]).emit('give player cards', move);
-        //io.to(user_arr[0][1]).emit('give player cards', move);
-        io.emit('game over', "game over!");
-    });
+
 
     }
 
