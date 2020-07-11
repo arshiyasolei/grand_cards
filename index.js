@@ -125,6 +125,7 @@ io.sockets.on('connection', function(socket) {
     //pass around content via strings (or arrays)
     socket.on('player move', function(move) {
         //update the given player and then emit to the other one
+        
         if (move.username == user_arr[0][0]) {
             console.log("player1 fired")
             let i = move.i
@@ -164,6 +165,7 @@ io.sockets.on('connection', function(socket) {
         } else if (players[0].cards.length == 0){
             io.emit('game over', "player 1 won");
         }
+        cards_left.shuffle()
         //io.emit('player1 moves', move);
     });
     console.log("I am listening to add cards now")

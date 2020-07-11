@@ -49,7 +49,7 @@ window.onload = function () {
   let cards_left = []
   let top_card = [1]
   socket.on('give player cards', function (playere,give_card,top_cards) {
-    players[0] = playere;
+    players[1] = playere;
     cards_left.push(give_card);
     console.log(top_cards)
     let top_img = new Image("145.2","204");
@@ -60,17 +60,17 @@ window.onload = function () {
 
     for (let idx = 0; idx < 7; idx++) {
       let img = new Image("145.2","204");
-      img.src = "assets/png/" +players[0].cards[idx][2] + "_" + players[0].cards[idx][1] + ".png";
-      players[0].cards[idx][0] = img;
+      img.src = "assets/png/" +players[1].cards[idx][2] + "_" + players[1].cards[idx][1] + ".png";
+      players[1].cards[idx][0] = img;
     
     }
-    players[1] = new player([])
+    players[0] = new player([])
     for (let idx = 0; idx < 7; idx++) {
-      console.log(players[1])
-      players[1].cards.push([back_img,null,null,null,null])
+      console.log(players[0])
+      players[0].cards.push([back_img,null,null,null,null])
       
     }
-
+    console.log(players)
   });
   
   // get canvas related references
@@ -89,7 +89,7 @@ window.onload = function () {
   //pick first
   //load all images
   // listen for mouse events
-  let over_valid_card = [0]
+  let over_valid_card = [1]
   var whos_turn;
 
   socket.on('player add card', function (arr) {
@@ -118,7 +118,7 @@ window.onload = function () {
       }
     }
     //push one two the other hand
-    players[1].cards.push([back_img,null,null,null,null])
+    players[0].cards.push([back_img,null,null,null,null])
     draw(ctx, players, back_img, cards_left.length, top_card);
   });
 
@@ -135,7 +135,7 @@ window.onload = function () {
       
       //cards_left[0] = arr.cards_left
       arr.top_card[0] = all_cards.cards["assets/png/" + arr.top_card[2] + "_" + arr.top_card[1] + ".png"]
-      players[1].cards.pop()
+      players[0].cards.pop()
       //arr.new_card[0] = all_cards.cards["assets/png/" + arr.new_card[2] + "_" + arr.new_card[1] + ".png"]
       draw(ctx, players, back_img, cards_left.length, top_card);
     } else {
