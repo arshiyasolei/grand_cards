@@ -31,6 +31,7 @@ window.onload = function () {
     }
   });
 
+
   socket.on('turn', function (t) {
     my_turn = t;
   });
@@ -44,6 +45,14 @@ window.onload = function () {
   back_img.src = "assets/png/back_dark" + ".png";
   // ask username
   username = prompt('Please tell me your name');
+  let choice = prompt("are you creating a room? enter 1 for yes and anything else for no")
+  if (choice === "1"){
+    let room = prompt("what room are you creating?")
+    socket.emit("create and join room",username,room)
+  } else {
+    let room = prompt("what room are you joining?")
+    socket.emit("join room",username,room)
+  }
   socket.emit('username', username);
 
   let cards_left = []
@@ -148,7 +157,7 @@ window.onload = function () {
     }
   });
   socket.on('game over', function(status) {
-    alert(status)
+    alert(status + "good job! " + username)
     //reset game
     //io.to(user_arr[0][1]).emit('give player cards', move);
 });
@@ -168,7 +177,7 @@ function game(ctx, canvas, over_valid_card, players, cards_left, over_valid_card
 
   setTimeout(() => {
     draw(ctx, players, back_img, cards_left.length, top_card);
-  }, 400);
+  }, 880);
 
   canvas.onmousedown = mouse_down(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card);
   canvas.onmouseup = mouse_up(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card);
