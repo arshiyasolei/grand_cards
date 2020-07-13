@@ -3,6 +3,7 @@ var username
 var all_cards
 var my_turn
 window.onload = function () {
+  let first_connection_time = 0;
   console.log(document.location.origin + ":8080")
   socket = io.connect(document.location.origin);
   all_cards = new card_stack()
@@ -13,7 +14,6 @@ window.onload = function () {
     $('#txt').val('');
     return false;
   });
-  
   // append the chat text message
   let first_time = true
   socket.on('chat_message', function (msg) {
@@ -21,7 +21,6 @@ window.onload = function () {
     let container = document.getElementById("messages")
     console.log(container.clientHeight,container.scrollHeight,container.scrollTop)
     if (first_time) {
-      
       container.scrollTop = 200;
       console.log(container.scrollTop)
       first_time = false;
@@ -31,9 +30,12 @@ window.onload = function () {
     }
   });
 
-
   socket.on('turn', function (t) {
     my_turn = t;
+    if (first_connection_time == 0){
+      game(ctx, canvas, over_valid_card, players, cards_left, over_valid_card, back_img,top_card);
+    }
+    first_connection_time += 1
   });
 
   // append text if someone is online
@@ -158,13 +160,21 @@ window.onload = function () {
   });
   socket.on('game over', function(status) {
     alert(status + "good job! " + username)
+    window.location.reload(true); 
+    //reset game
+    //io.to(user_arr[0][1]).emit('give player cards', move);
+});
+
+  socket.on('player disconnect', function(status) {
+
+    alert(status + " The other player disconnected!")
+    window.location.reload(true); 
     //reset game
     //io.to(user_arr[0][1]).emit('give player cards', move);
 });
   //starts the game!
   console.log(top_card)
 
-  game(ctx, canvas, over_valid_card, players, cards_left, over_valid_card, back_img,top_card);
   //resize canvas and the whole window
   window.addEventListener('resize', () => {
     ctx.canvas.width = canvas.parentElement.clientWidth
@@ -478,7 +488,6 @@ function draw(ctx, players, back_img, cards_left_len, current_top) {
     let cards_width = (players[i].cards.length - 1) * 50 + 145.2
     if (players[i].cards.length == 1) {
       cards_width = 145.2
-
     }
     g = (ctx.canvas.width - cards_width) / 2
     for (let vals = 0; vals < players[i].cards.length; vals++) {

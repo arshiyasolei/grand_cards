@@ -62,15 +62,20 @@ function game_start(events_functions,socket,roomid){
     //top card on stack
     let top_card = [cards_left.cards.pop()]
     let whos_turn = 1;
-    events_functions(socket,roomid,cards_left,top_card,players);
-    io.to(user_arr[roomid][0][1]).emit('turn', whos_turn);
-    io.to(user_arr[roomid][0][1]).emit('give player cards', players[0],cards_left[cards_left.length-1],top_card[0]);
-    
+
     return (another_event_functions,s,r) => {
+        //gives cards to player 1
+        events_functions(socket,roomid,cards_left,top_card,players);
+        io.to(user_arr[roomid][0][1]).emit('turn', whos_turn);
+        io.to(user_arr[roomid][0][1]).emit('give player cards', players[0],cards_left[cards_left.length-1],top_card[0]);
+        //gives cards to player 2
         another_event_functions(s,r,cards_left,top_card,players);
         whos_turn = 0;
         io.to(user_arr[roomid][1][1]).emit('turn', whos_turn);
         io.to(user_arr[roomid][1][1]).emit('give player cards', players[1],cards_left[cards_left.length-1],top_card[0]);
+    
+
+    
     }
     
 }
@@ -154,7 +159,28 @@ function game_events(socket,roomid,cards_left,top_card,players){
         }
         //io.emit('player2 moves', move);
     });
-
+    //when socket disconnects
+    socket.on("disconnect", function (){
+        io.emit('is_online', '🔴 <i>' + socket.username + ' left the chat..</i>');
+        try {
+            io.to(user_arr[roomid][1][1]).emit('player disconnect', "hi");
+          } catch (error) {
+            ;
+            // expected output: ReferenceError: nonExistentFunction is not defined
+            // Note - error messages will vary depending on browser
+          }
+        try {
+            io.to(user_arr[roomid][0][1]).emit('player disconnect', "hi");
+          } catch (error) {
+            ;
+            // expected output: ReferenceError: nonExistentFunction is not defined
+            // Note - error messages will vary depending on browser
+          }
+        delete user_arr[roomid]
+        delete games_arr[roomid]
+        //io.to(user_arr[roomid][1][1]).emit('player disconnect', "hi");
+        //io.to(user_arr[roomid][0][1]).emit('player disconnect', "hi");
+    });
 }
 
 let user_arr = {}
@@ -163,15 +189,9 @@ io.sockets.on('connection', function(socket) {
 
     socket.on('username', function(username) {
         socket.username = username;
-
         console.log("connection!");
-        
         io.emit('is_online', '🔵 <i>' + socket.username + ' joined the chat..</i>');
     });
-
-    socket.on('disconnect', function(username) {
-        io.emit('is_online', '🔴 <i>' + socket.username + ' left the chat..</i>');
-    })
 
     socket.on('chat_message', function(message) {
         io.emit('chat_message', '<strong>' + socket.username + '</strong>: ' + message);
@@ -186,10 +206,10 @@ io.sockets.on('connection', function(socket) {
         user_arr[roomid].push([username,Object.keys(room.sockets)[0]])
         whos_turn = 1;
         console.log(user_arr[roomid])
-
-        games_arr[roomid] = game_start( game_events,socket,roomid )
+        if (!(roomid in games_arr)){
+            games_arr[roomid] = game_start( game_events,socket,roomid )
+        }
         
-
     });
     socket.on('join room', function(username,roomid) {
 
