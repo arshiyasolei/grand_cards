@@ -108,13 +108,24 @@ window.onload = function () {
       username: username,
     }
     if (arr.username == move.username){
-      socket.emit('player update add card', move);
-      console.log("card added to me!",arr.new_card);
-      console.log(all_cards.cards["assets/png/" + arr.new_card[2] + "_" + arr.new_card[1] + ".png"])
-      arr.new_card[0] = all_cards.cards["assets/png/" + arr.new_card[2] + "_" + arr.new_card[1] + ".png"]
-      players[over_valid_card[0]].cards.push(arr.new_card)
-      draw(ctx, players, back_img, cards_left.length, top_card);
-
+      console.log(arr.new_card , "new card MOVE")
+      if (arr.new_card){
+        socket.emit('player update add card', move);
+        //console.log("card added to me!",arr.new_card);
+        //console.log(all_cards.cards["assets/png/" + arr.new_card[2] + "_" + arr.new_card[1] + ".png"])
+        arr.new_card[0] = all_cards.cards["assets/png/" + arr.new_card[2] + "_" + arr.new_card[1] + ".png"]
+        players[over_valid_card[0]].cards.push(arr.new_card)
+        if (arr.cards_l_len == 0){
+          console.log("length dependent one got triggered")
+          cards_left.pop()
+        }
+        draw(ctx, players, back_img, cards_left.length, top_card);
+      } else {
+        socket.emit('player update add card', move);
+        console.log("why do I need this")
+        //cards_left.pop()
+        draw(ctx, players, back_img, cards_left.length, top_card);
+      }
     } else {
       //update player 2 hands view
       //whos_turn = arr.whos_turn
@@ -124,10 +135,12 @@ window.onload = function () {
   });
   socket.on('player update add card',function (newlen){
     if (newlen == 0){
+      //if the new length isn't 0, the update
       if (cards_left.length != 0){
         cards_left.pop()
       }
-    }
+  }
+  
     //push one two the other hand
     players[0].cards.push([back_img,null,null,null,null])
     //animate other player hand
@@ -146,7 +159,7 @@ window.onload = function () {
       console.log("I got fired")
       top_card[0] = arr.top_card
       
-      //cards_left[0] = arr.cards_left
+      cards_left[0] = arr.cards_left
       arr.top_card[0] = all_cards.cards["assets/png/" + arr.top_card[2] + "_" + arr.top_card[1] + ".png"]
       players[0].cards.pop()
       //arr.new_card[0] = all_cards.cards["assets/png/" + arr.new_card[2] + "_" + arr.new_card[1] + ".png"]
@@ -179,7 +192,9 @@ window.onload = function () {
   window.addEventListener('resize', () => {
     ctx.canvas.width = canvas.parentElement.clientWidth
     ctx.canvas.height = canvas.parentElement.clientHeight
-    draw(ctx, players, back_img, cards_left.length, top_card);
+    if (first_connection_time != 0){
+      draw(ctx, players, back_img, cards_left.length, top_card);
+    }
   });
 }
 
@@ -238,6 +253,7 @@ function animate_in_line(ctx, canvas, over_valid_card, players, back_img, cards_
   let increment_x = 0
   console.log(x_point,y_point,top_img_pointx,top_img_pointy)
   function draw_line_move_animation() {
+
     console.log("animation drawing!")
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     ctx.beginPath();
@@ -254,8 +270,8 @@ function animate_in_line(ctx, canvas, over_valid_card, players, back_img, cards_
     
     new_x_point = temp_points[0]
     new_y_point = temp_points[1]
-    increment_x += 0.1
-    //console.log(slope,new_x_point,new_y_point,top_img_pointx,top_img_pointy)
+    increment_x += 0.01
+    console.log(new_x_point,new_y_point,top_img_pointx,top_img_pointy)
     ctx.drawImage(card_to_animate[0],new_x_point,new_y_point,current_top[0][0].width, current_top[0][0].height)
     ctx.save()
     //draw card in the middle and "sta∂ck"
@@ -265,8 +281,8 @@ function animate_in_line(ctx, canvas, over_valid_card, players, back_img, cards_
       // decide if the shape is a rect or circle
       // (it's a rect if it has a width property)
       let g = 30
-
-      let cards_width = (players[i].cards.length - 1) * 50 + 145.2
+      let card_distance_factor = 27
+      let cards_width = (players[i].cards.length - 1) * card_distance_factor + 145.2
       if (players[i].cards.length == 1) {
         cards_width = 145.2
       }
@@ -276,7 +292,7 @@ function animate_in_line(ctx, canvas, over_valid_card, players, back_img, cards_
         ctx.fillStyle = "white";
         ctx.strokeStyle = "black";
         ctx.lineWidth = 2;
-        players[i].cards[vals][4] = g + 50
+        players[i].cards[vals][4] = g + card_distance_factor
         if (players[i].cards.length == 1 || players[i].cards.length - 1 == vals) {
           players[i].cards[vals][4] = g + players[i].cards[vals][0].width
         }
@@ -286,7 +302,7 @@ function animate_in_line(ctx, canvas, over_valid_card, players, back_img, cards_
 
         ctx.roundRect(g, 27 - y + y_shift_down, players[i].cards[vals][0].width, players[i].cards[vals][0].height, 10).stroke()
         ctx.drawImage(players[i].cards[vals][0], g, 27 - y + y_shift_down, players[i].cards[vals][0].width, players[i].cards[vals][0].height);
-        g += 50
+        g += card_distance_factor
       }
       y = 27
       y_shift_down = ctx.canvas.height - 250
@@ -294,13 +310,14 @@ function animate_in_line(ctx, canvas, over_valid_card, players, back_img, cards_
     }
     //when we reach the dectination, stop animation
     
-    if (  (new_x_point != top_img_pointx) && (new_y_point != top_img_pointy) ) {
+    if (  (Math.round(new_x_point) != top_img_pointx) && (Math.round(new_y_point) != top_img_pointy) ) {
       window.requestAnimationFrame(draw_line_move_animation);
+    } else {
+    draw(ctx, players, back_img, cards_left.length, top_card);
     }
-
   }
   window.requestAnimationFrame(draw_line_move_animation);
-
+  
 }
 //if mouse up happens when a card was selected,
 //and the play was valid, remove card from player stack!
@@ -318,10 +335,14 @@ function mouse_up(ctx, canvas, over_valid_card, players, back_img, cards_left, t
         let move = {
           username: username
         }
-        socket.emit('player add card', move);
-        console.log("added supposedly")
+        if (cards_left.length > 0){
+          socket.emit('player add card', move);
+          console.log("yes the length is more")
+        } else {
+          //socket.emit('player add card', move);
+          //cards_left = []
+        }
         //add_extra_to_hand(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card)();
-
       }
       if (check_card_nodraw_needed(players, over_valid_card, cards_left, top_card, ctx, canvas, back_img)) {
         for (let i = 0; i < players[over_valid_card[0]].cards.length; i++) {
@@ -347,8 +368,11 @@ function mouse_up(ctx, canvas, over_valid_card, players, back_img, cards_left, t
                 top_card[0] = players[over_valid_card[0]].cards[i]
                 //removes card from player sta∂ck
                 players[over_valid_card[0]].cards.splice(i, 1)
+
+                cards_left[0] = back_img
+                console.log(cards_left.length)
                 //console.log(players[over_valid_card[0]].cards)
-                
+                draw(ctx, players, back_img, cards_left.length, top_card);
                 break;
               }
             }
@@ -360,8 +384,8 @@ function mouse_up(ctx, canvas, over_valid_card, players, back_img, cards_left, t
         console.log("add cards from the other pile!")
         //for something else
       }
-      draw(ctx, players, back_img, cards_left.length, top_card);
-      console.log(top_card[0][1])
+      //draw(ctx, players, back_img, cards_left.length, top_card);
+      //console.log(top_card[0][1])
     }
   };
 }
@@ -484,8 +508,8 @@ function draw(ctx, players, back_img, cards_left_len, current_top) {
     // decide if the shape is a rect or circle
     // (it's a rect if it has a width property)
     let g = 30
-
-    let cards_width = (players[i].cards.length - 1) * 50 + 145.2
+    let card_distance_factor = 27
+    let cards_width = (players[i].cards.length - 1) * card_distance_factor + 145.2
     if (players[i].cards.length == 1) {
       cards_width = 145.2
     }
@@ -495,7 +519,7 @@ function draw(ctx, players, back_img, cards_left_len, current_top) {
       ctx.fillStyle = "white";
       ctx.strokeStyle = "black";
       ctx.lineWidth = 2;
-      players[i].cards[vals][4] = g + 50
+      players[i].cards[vals][4] = g + card_distance_factor
       if (players[i].cards.length == 1 || players[i].cards.length - 1 == vals) {
         console.log(players[i].cards[vals][0],vals,players[0])
         players[i].cards[vals][4] = g + players[i].cards[vals][0].width
@@ -507,12 +531,11 @@ function draw(ctx, players, back_img, cards_left_len, current_top) {
 
       ctx.roundRect(g, 27 - y + y_shift_down, players[i].cards[vals][0].width, players[i].cards[vals][0].height, 10).stroke()
       ctx.drawImage(players[i].cards[vals][0], g, 27 - y + y_shift_down, players[i].cards[vals][0].width, players[i].cards[vals][0].height);
-      g += 50
+      g += card_distance_factor
     }
     y = 27
     y_shift_down = ctx.canvas.height - 250
 
   }
-
 
 }

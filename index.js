@@ -84,10 +84,12 @@ function game_start(events_functions,socket,roomid){
 app.get('/', function(req, res) {
     res.render('index.ejs');
 });
+
 function game_events(socket,roomid,cards_left,top_card,players){
     //needs to hide the extra stack + other player cards
     //generate other player cards on their side
     //pass around content via strings (or arrays)
+    // player move: [function(move)]
     socket.on('player move', function(move) {
         //update the given player and then emit to the other one
         
@@ -138,12 +140,23 @@ function game_events(socket,roomid,cards_left,top_card,players){
         console.log(user_arr[roomid][0][0],move.username)
         if (move.username == user_arr[roomid][0][0]) {
             //check if cards_left is 0
-            move.new_card = cards_left.cards.pop()
-            players[0].cards.push(move.new_card)
+            console.log(cards_left.cards.length)
+            if (cards_left.cards.length > 0){
+                move.new_card = cards_left.cards.pop()
+                move.cards_l_len = cards_left.cards.length
+                players[0].cards.push(move.new_card)
+            } else {
+                move.new_card = undefined
+            }
             io.to(user_arr[roomid][0][1]).emit('player add card', move);
         } else {
-            move.new_card = cards_left.cards.pop()
-            players[1].cards.push(move.new_card)
+            if (cards_left.cards.length > 0){
+                move.new_card = cards_left.cards.pop()
+                move.cards_l_len = cards_left.cards.length
+                players[1].cards.push(move.new_card)
+            } else {
+                move.new_card = undefined
+            }
             io.to(user_arr[roomid][1][1]).emit('player add card', move);
         }
         //io.emit('player2 moves', move);
@@ -185,8 +198,10 @@ function game_events(socket,roomid,cards_left,top_card,players){
 
 let user_arr = {}
 let games_arr = {}
-io.sockets.on('connection', function(socket) {
 
+io.sockets.on('connection', function(socket) {
+    
+    console.log(socket)
     socket.on('username', function(username) {
         socket.username = username;
         console.log("connection!");
