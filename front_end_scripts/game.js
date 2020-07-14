@@ -172,7 +172,7 @@ window.onload = function () {
     }
   });
   socket.on('game over', function(status) {
-    alert(status + "good job! " + username)
+    alert(status)
     window.location.reload(true); 
     //reset game
     //io.to(user_arr[0][1]).emit('give player cards', move);

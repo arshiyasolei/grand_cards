@@ -2,7 +2,9 @@ const express = require('express');
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
-app.use(express.static(__dirname + '/'));
+app.use(express.static('views'));
+app.use(express.static('front_end_scripts'));
+app.use("/assets",express.static('assets'));
 
 //probably needs an ai too
 class player {
@@ -128,9 +130,9 @@ function game_events(socket,roomid,cards_left,top_card,players){
             io.to(user_arr[roomid][1][1]).emit('turn', 0);
         }
         if (players[1].cards.length == 0){
-            io.emit('game over', "player 2 won");
+            io.in(roomid).emit('game over', user_arr[roomid][1][0] + "won");
         } else if (players[0].cards.length == 0){
-            io.emit('game over', "player 1 won");
+            io.in(roomid).emit('game over', user_arr[roomid][0][0] + "won");
         }
         cards_left.shuffle()
         //io.emit('player1 moves', move);
@@ -175,24 +177,11 @@ function game_events(socket,roomid,cards_left,top_card,players){
     //when socket disconnects
     socket.on("disconnect", function (){
         io.emit('is_online', '🔴 <i>' + socket.username + ' left the chat..</i>');
-        try {
-            io.to(user_arr[roomid][1][1]).emit('player disconnect', "hi");
-          } catch (error) {
-            ;
-            // expected output: ReferenceError: nonExistentFunction is not defined
-            // Note - error messages will vary depending on browser
-          }
-        try {
-            io.to(user_arr[roomid][0][1]).emit('player disconnect', "hi");
-          } catch (error) {
-            ;
-            // expected output: ReferenceError: nonExistentFunction is not defined
-            // Note - error messages will vary depending on browser
-          }
+        
+        io.in(roomid).emit('player disconnect', "hi");
+        //deletes the game room and user array of that room
         delete user_arr[roomid]
         delete games_arr[roomid]
-        //io.to(user_arr[roomid][1][1]).emit('player disconnect', "hi");
-        //io.to(user_arr[roomid][0][1]).emit('player disconnect', "hi");
     });
 }
 
@@ -201,7 +190,7 @@ let games_arr = {}
 
 io.sockets.on('connection', function(socket) {
     
-    console.log(socket)
+    //console.log(socket)
     socket.on('username', function(username) {
         socket.username = username;
         console.log("connection!");
