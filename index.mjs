@@ -1,59 +1,30 @@
-const express = require('express');
-const app = express();
-const http = require('http').Server(app);
-const io = require('socket.io')(http);
+import card_stack from "./card_stack.mjs"
+import express from 'express';
+import http from 'http';
+import SocketIO from 'socket.io';
+const port = "8080"
+let app = express();
+let server = http.Server(app);
+let io = new SocketIO(server);
 app.use(express.static('views'));
 app.use(express.static('front_end_scripts'));
 app.use("/assets",express.static('assets'));
-
 //probably needs an ai too
 class player {
     constructor(arr) {
       this.cards = arr;
     }
-
   }
 //Representing a Stack/list of cards with shuffling in the backend
-class card_stack {
-    constructor() {
-      this.cards = [];
-      //goal to create all images as objects
-        let card_types = ["clubs","diamonds","spades","hearts"];
-        let aceme = ["A","J","K","Q"];
-        for (let card_t of card_types){
-            for (let i = 2; i < 11; i ++){
-                //Get image here
-                let tempi = i;
-                tempi.toString;
-                //console.log("assets/png/" + tempi + "_of_" + card_t + ".png")
-                let res = [null,i,card_t,null,null]
-                this.cards.push(res)
-            }
-            for (let i of aceme){
-                //Get image here
-                let tempi = i;
-                let res = [null,i,card_t,null,null]
-                this.cards.push(res)
-            }
-    }
-
-    }
-    shuffle() {
-        //https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
-        for (let i = this.cards.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [this.cards[i], this.cards[j]] = [this.cards[j], this.cards[i]];
-        }
-    }
-  }
-
+console.log(card_stack)
 function game_start(events_functions,socket,roomid){
     let cards_left = new card_stack();
+    console.log(cards_left)
     cards_left.shuffle()
     let player_count = 2;
     let players = []
     for (let i = 1; i <= player_count; i++) {
-        player_cards = []
+        let player_cards = []
         for (let idx = 0; idx < 7; idx++) {
             player_cards.push(cards_left.cards.pop())
         }
@@ -75,8 +46,6 @@ function game_start(events_functions,socket,roomid){
         whos_turn = 0;
         io.to(user_arr[roomid][1][1]).emit('turn', whos_turn);
         io.to(user_arr[roomid][1][1]).emit('give player cards', players[1],cards_left[cards_left.length-1],top_card[0]);
-    
-
     
     }
     
@@ -208,7 +177,7 @@ io.sockets.on('connection', function(socket) {
         user_arr[roomid] = []
         
         user_arr[roomid].push([username,Object.keys(room.sockets)[0]])
-        whos_turn = 1;
+        //whos_turn = 1;
         console.log(user_arr[roomid])
         if (!(roomid in games_arr)){
             games_arr[roomid] = game_start( game_events,socket,roomid )
@@ -228,7 +197,7 @@ io.sockets.on('connection', function(socket) {
             } else {
                 user_arr[roomid].push([username,Object.keys(room.sockets)[0]])
             }
-            whos_turn = 0
+            //whos_turn = 0
             console.log(user_arr[roomid])
             games_arr[roomid](game_events,socket,roomid)
             //game_events(socket,roomid)
@@ -238,6 +207,6 @@ io.sockets.on('connection', function(socket) {
 
 });
 
-const server = http.listen(8080, function() {
-    console.log('listening on *:8080');
+server.listen(port, () => {
+    console.log('[INFO] Listening on *:' + port);
 });
