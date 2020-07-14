@@ -1,7 +1,7 @@
 <h1 align="center">Welcome to Hafte_cards!</h1>
 <p>
 
-   ![Build Status] (https://travis-ci.org/arshiyasolei/hafte-cards)
+   ![Build Status](https://travis-ci.org/arshiyasolei/hafte-cards)
 </p>
 
 > Hafte cards is a multiplayer card game simillar to UNO.
