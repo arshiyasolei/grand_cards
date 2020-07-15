@@ -1,4 +1,4 @@
-<h1 align="center">Welcome to Hafte_cards!</h1>
+<h1 align="center">Welcome to hafte_cards!</h1>
 <p>
 
    [![Build Status](https://travis-ci.org/arshiyasolei/hafte-cards.svg?branch=master)](https://travis-ci.org/arshiyasolei/hafte-cards)
