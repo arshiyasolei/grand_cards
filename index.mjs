@@ -15,7 +15,13 @@ class player {
       this.cards = arr;
     }
   }
-//Representing a Stack/list of cards with shuffling in the backend
+/**
+ * Starts a game for a room
+ * @param  {fuction} events_functions first number
+ * @param  {socket} socket The second number
+ * @param  {int} roomid The second number
+ * @return {function} An annoynmous function that takes in anther event function, socket, and roomid for the second player
+ */
 console.log(card_stack)
 function game_start(events_functions,socket,roomid){
     let cards_left = new card_stack();
@@ -55,7 +61,13 @@ function game_start(events_functions,socket,roomid){
 app.get('/', function(req, res) {
     res.render('index.ejs');
 });
-
+/**
+ * a function that adds events to a client socket when they join a room
+ * @param  {fuction} events_functions first number
+ * @param  {socket} socket The second number
+ * @param  {int} roomid The second number
+ * @return {function} An annoynmous function that takes in anther event function, socket, and roomid for the second player
+ */
 function game_events(socket,roomid,cards_left,top_card,players){
     //needs to hide the extra stack + other player cards
     //generate other player cards on their side
