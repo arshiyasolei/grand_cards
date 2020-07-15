@@ -4,7 +4,7 @@
    [![Build Status](https://travis-ci.org/arshiyasolei/hafte-cards.svg?branch=master)](https://travis-ci.org/arshiyasolei/hafte-cards)
 </p>
 
-> Hafte cards is a multiplayer card game simillar to UNO.
+<p> Hafte cards is an online multiplayer card game. Its gameplay is a variation of the dirty seven card game, and it supports public chat between all players! The backend is written with Node.js and the frontend is vanila javascript. This project uses the Socket.io framework as its networking framework. </p>
 
 ## Gameplay screenshot
 
@@ -22,11 +22,17 @@ npm install
 npm start
 ```
 
-## Run tests
+## Run unit tests
 
 ```sh
 npm test
 ```
+### Upcoming features
+
+- [ ] WebRTC support
+- [ ] Leaderboards
+- [ ] Private chat
+- [ ] Background selector
 
 ## Author
 
