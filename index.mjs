@@ -173,24 +173,27 @@ io.sockets.on('connection', function(socket) {
     socket.on('create and join room', function(username,roomid) {
         let room = io.sockets.adapter.rooms[roomid];
         console.log(room)
-        if (room && room.sockets){
-            for (let delete_me of Object.keys(room.sockets) ){
-                io.sockets.connected[delete_me].disconnect()
+        if (room && room.sockets && Object.keys(room.sockets).length == 2){
+            //don't do anything
+        } else {
+            if (room && room.sockets){
+                for (let delete_me of Object.keys(room.sockets) ){
+                    io.sockets.connected[delete_me].disconnect()
+                }
             }
-         }
-        socket.join(roomid);
-        console.log(room)
-        room = io.sockets.adapter.rooms[roomid];
-        //console.log(user_arr[roomid],room.sockets)
-        user_arr[roomid] = []
-        delete games_arr[roomid]
-        user_arr[roomid].push([username,Object.keys(room.sockets)[0]])
-        //whos_turn = 1;
-        console.log(user_arr[roomid],room.sockets)
-        if (!(roomid in games_arr)){
-            games_arr[roomid] = game_start( game_events,socket,roomid )
-        }
-        
+            socket.join(roomid);
+            console.log(room)
+            room = io.sockets.adapter.rooms[roomid];
+            //console.log(user_arr[roomid],room.sockets)
+            user_arr[roomid] = []
+            delete games_arr[roomid]
+            user_arr[roomid].push([username,Object.keys(room.sockets)[0]])
+            //whos_turn = 1;
+            console.log(user_arr[roomid],room.sockets)
+            if (!(roomid in games_arr)){
+                games_arr[roomid] = game_start( game_events,socket,roomid )
+            }
+    }
     });
     socket.on('join room', function(username,roomid) {
 

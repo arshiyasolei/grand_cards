@@ -7,6 +7,10 @@
 
 > Hafte cards is a multiplayer card game simillar to UNO.
 
+## Gameplay screenshot
+
+<img src="game_screenshot.png"/>
+
 ## Install
 
 ```sh
