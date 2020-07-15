@@ -32,6 +32,11 @@ window.onload = function () {
 
   socket.on('turn', function (t) {
     my_turn = t;
+    console.log("turn called!")
+    if (my_turn == 1){
+      //plays audio telling it is your turn
+      window.speechSynthesis.speak(new SpeechSynthesisUtterance("your turn"));
+    }
     if (first_connection_time == 0){
       game(ctx, canvas, over_valid_card, players, cards_left, over_valid_card, back_img,top_card);
     }
@@ -172,6 +177,7 @@ window.onload = function () {
     }
   });
   socket.on('game over', function(status) {
+    window.speechSynthesis.speak(new SpeechSynthesisUtterance(status));
     alert(status)
     window.location.reload(true); 
     //reset game
@@ -268,9 +274,9 @@ function animate_in_line(ctx, canvas, over_valid_card, players, back_img, cards_
     
     temp_points = vector_equation_point(x_point,y_point,top_img_pointx,top_img_pointy,increment_x)
     
-    new_x_point = temp_points[0]
-    new_y_point = temp_points[1]
-    increment_x += 0.01
+    new_x_point = Math.round(temp_points[0])
+    new_y_point = Math.round(temp_points[1])
+    increment_x += 0.1
     console.log(new_x_point,new_y_point,top_img_pointx,top_img_pointy)
     ctx.drawImage(card_to_animate[0],new_x_point,new_y_point,current_top[0][0].width, current_top[0][0].height)
     ctx.save()
@@ -372,7 +378,7 @@ function mouse_up(ctx, canvas, over_valid_card, players, back_img, cards_left, t
                 cards_left[0] = back_img
                 console.log(cards_left.length)
                 //console.log(players[over_valid_card[0]].cards)
-                draw(ctx, players, back_img, cards_left.length, top_card);
+                //draw(ctx, players, back_img, cards_left.length, top_card);
                 break;
               }
             }

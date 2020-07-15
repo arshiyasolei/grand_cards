@@ -99,9 +99,9 @@ function game_events(socket,roomid,cards_left,top_card,players){
             io.to(user_arr[roomid][1][1]).emit('turn', 0);
         }
         if (players[1].cards.length == 0){
-            io.in(roomid).emit('game over', user_arr[roomid][1][0] + "won");
+            io.in(roomid).emit('game over', user_arr[roomid][1][0] + " won");
         } else if (players[0].cards.length == 0){
-            io.in(roomid).emit('game over', user_arr[roomid][0][0] + "won");
+            io.in(roomid).emit('game over', user_arr[roomid][0][0] + " won");
         }
         cards_left.shuffle()
         //io.emit('player1 moves', move);
@@ -175,7 +175,7 @@ io.sockets.on('connection', function(socket) {
         socket.join(roomid);
         let room = io.sockets.adapter.rooms[roomid];
         user_arr[roomid] = []
-        
+        delete games_arr[roomid]
         user_arr[roomid].push([username,Object.keys(room.sockets)[0]])
         //whos_turn = 1;
         console.log(user_arr[roomid])
@@ -187,8 +187,12 @@ io.sockets.on('connection', function(socket) {
     socket.on('join room', function(username,roomid) {
 
         let room = io.sockets.adapter.rooms[roomid];
+        if (room && Object.keys(room.sockets).length == 1 && username === user_arr[roomid][0][0]){
+            //don't join
+            socket.disconnect()
+        }
         //console.log(room.sockets,room.sockets.length,"is this getting called")
-        if (room && Object.keys(room.sockets).length == 1){
+        else if (room && Object.keys(room.sockets).length == 1){
             socket.join(roomid);
             console.log(room.sockets)
             //console.log(Object.keys(room.sockets),user_arr)
@@ -198,7 +202,7 @@ io.sockets.on('connection', function(socket) {
                 user_arr[roomid].push([username,Object.keys(room.sockets)[0]])
             }
             //whos_turn = 0
-            console.log(user_arr[roomid])
+            console.log(user_arr[roomid],games_arr[roomid])
             games_arr[roomid](game_events,socket,roomid)
             //game_events(socket,roomid)
         }
