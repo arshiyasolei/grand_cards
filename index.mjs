@@ -56,7 +56,6 @@ function game_start(socket,roomid){
     
 }
 //console.log(top_card)
-
 app.get('/', function(req, res) {
     res.render('index.ejs');
 });
