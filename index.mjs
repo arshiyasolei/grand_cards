@@ -23,7 +23,7 @@ class player {
  * @return {function} An annoynmous function that takes in anther event function, socket, and roomid for the second player
  */
 console.log(card_stack)
-function game_start(events_functions,socket,roomid){
+function game_start(socket,roomid){
     let cards_left = new card_stack();
     console.log(cards_left)
     cards_left.shuffle()
@@ -41,14 +41,13 @@ function game_start(events_functions,socket,roomid){
     //top card on stack
     let top_card = [cards_left.cards.pop()]
     let whos_turn = 1;
-
-    return (another_event_functions,s,r) => {
+    return (s,r) => {
         //gives cards to player 1
         events_functions(socket,roomid,cards_left,top_card,players);
         io.to(user_arr[roomid][0][1]).emit('turn', whos_turn);
         io.to(user_arr[roomid][0][1]).emit('give player cards', players[0],cards_left[cards_left.length-1],top_card[0]);
         //gives cards to player 2
-        another_event_functions(s,r,cards_left,top_card,players);
+        events_functions(s,r,cards_left,top_card,players);
         whos_turn = 0;
         io.to(user_arr[roomid][1][1]).emit('turn', whos_turn);
         io.to(user_arr[roomid][1][1]).emit('give player cards', players[1],cards_left[cards_left.length-1],top_card[0]);
@@ -68,7 +67,7 @@ app.get('/', function(req, res) {
  * @param  {int} roomid The second number
  * @return {function} An annoynmous function that takes in anther event function, socket, and roomid for the second player
  */
-function game_events(socket,roomid,cards_left,top_card,players){
+function events_functions(socket,roomid,cards_left,top_card,players){
     //needs to hide the extra stack + other player cards
     //generate other player cards on their side
     //pass around content via strings (or arrays)
@@ -203,7 +202,7 @@ io.sockets.on('connection', function(socket) {
             //whos_turn = 1;
             console.log(user_arr[roomid],room.sockets)
             if (!(roomid in games_arr)){
-                games_arr[roomid] = game_start( game_events,socket,roomid )
+                games_arr[roomid] = game_start(socket,roomid )
             }
     }
     });
@@ -228,7 +227,7 @@ io.sockets.on('connection', function(socket) {
             //whos_turn = 0
             console.log(room.sockets)
             console.log(user_arr[roomid],games_arr[roomid])
-            games_arr[roomid](game_events,socket,roomid)
+            games_arr[roomid](socket,roomid)
             //game_events(socket,roomid)
         }
 
