@@ -61,10 +61,9 @@ app.get('/', function(req, res) {
 });
 /**
  * a function that adds events to a client socket when they join a room
- * @param  {fuction} events_functions first number
  * @param  {socket} socket The second number
  * @param  {int} roomid The second number
- * @return {function} An annoynmous function that takes in anther event function, socket, and roomid for the second player
+ * @return {function} An annoynmous function that takes in socket, and roomid for the second player
  */
 function events_functions(socket,roomid,cards_left,top_card,players){
     //needs to hide the extra stack + other player cards
@@ -167,6 +166,7 @@ function events_functions(socket,roomid,cards_left,top_card,players){
 let user_arr = {}
 let games_arr = {}
 
+//Called when a new connection occurs. Calls the callback and passes in the new socket. 
 io.sockets.on('connection', function(socket) {
     
     //console.log(socket)

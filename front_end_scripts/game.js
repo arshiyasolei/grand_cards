@@ -2,6 +2,7 @@ var socket
 var username
 var all_cards
 var my_turn
+// Starts the UI when the website fully loads
 window.onload = function () {
   let first_connection_time = 0;
   console.log(document.location.origin + ":8080")
@@ -29,7 +30,7 @@ window.onload = function () {
       container.scrollTop = container.scrollHeight;
     }
   });
-
+  //listens on the "turn" singal from backend
   socket.on('turn', function (t) {
     my_turn = t;
     console.log("turn called!")
@@ -64,6 +65,7 @@ window.onload = function () {
 
   let cards_left = []
   let top_card = [1]
+  //gives cards to player when server emits player cards
   socket.on('give player cards', function (playere,give_card,top_cards) {
     players[1] = playere;
     cards_left.push(give_card);
@@ -107,7 +109,7 @@ window.onload = function () {
   // listen for mouse events
   let over_valid_card = [1]
   var whos_turn;
-
+  //adds cards to player when event is fired
   socket.on('player add card', function (arr) {
     let move = {
       username: username,
@@ -138,6 +140,7 @@ window.onload = function () {
       //cards_left[0] = arr.cards_left
     }
   });
+  //updates player cards
   socket.on('player update add card',function (newlen){
     if (newlen == 0){
       //if the new length isn't 0, the update
@@ -152,7 +155,7 @@ window.onload = function () {
     //animate_in_line(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card,card_to_animate)
     draw(ctx, players, back_img, cards_left.length, top_card);
   });
-
+  // updates player cards based on moves
   socket.on('player move', function (arr) {
     let move = {
       username: username,
@@ -176,6 +179,7 @@ window.onload = function () {
       //update player 2 hands view
     }
   });
+  //listens to the "game over" event.
   socket.on('game over', function(status) {
     window.speechSynthesis.speak(new SpeechSynthesisUtterance(status));
     alert(status)
@@ -183,7 +187,7 @@ window.onload = function () {
     //reset game
     //io.to(user_arr[0][1]).emit('give player cards', move);
 });
-
+  //reloads the window when player disconnects
   socket.on('player disconnect', function(status) {
 
     alert(status + " The other player disconnected!")
@@ -205,17 +209,19 @@ window.onload = function () {
 }
 
 function game(ctx, canvas, over_valid_card, players, cards_left, over_valid_card, back_img,top_card) {
-
+  //waits for all images to load before drawing
   setTimeout(() => {
     draw(ctx, players, back_img, cards_left.length, top_card);
   }, 880);
-
+  // adds events to listen for mouse clicks
   canvas.onmousedown = mouse_down(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card);
   canvas.onmouseup = mouse_up(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card);
   canvas.onmousemove = mouse_move(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card);
 
 }
-//adds card to the hands of whoever that is waiting to play
+/**
+ * a function that adds card to the hands of whoever that is waiting to play
+ */
 function add_extra_to_hand(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card) {
   return function () {
     if (cards_left.cards.length > 0) {
@@ -232,13 +238,17 @@ function add_extra_to_hand(ctx, canvas, over_valid_card, players, back_img, card
     }
   };
 }
-//check to see if any cards are selected
+/**
+ * a function that listens to mouse down events (currently doesn't do anything)
+ */
 function mouse_down(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card) {
   return function (e) {
 
   };
 }
-//parametric equations for path finding
+/**
+ * Parametric equations for path finding for card animations.
+ */
 function vector_equation_point(x_point,y_point,top_img_pointx,top_img_pointy,increment){
 
   return {
@@ -246,7 +256,9 @@ function vector_equation_point(x_point,y_point,top_img_pointx,top_img_pointy,inc
     1: y_point + increment*(top_img_pointy - y_point)
   };
 }
-//move selected card in a line
+/**
+ * Card moving animations. 
+ */
 function animate_in_line(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card,card_to_animate) {
   
   //elegent equation for doing this
@@ -325,8 +337,10 @@ function animate_in_line(ctx, canvas, over_valid_card, players, back_img, cards_
   window.requestAnimationFrame(draw_line_move_animation);
   
 }
-//if mouse up happens when a card was selected,
-//and the play was valid, remove card from player stack!
+/**
+ * if mouse up happens when a card was selected,
+ * and the play was valid, remove card from player stack!
+ */
 function mouse_up(ctx, canvas, over_valid_card, players, back_img, cards_left, top_card) {
   return function (e) {
     if (my_turn){
@@ -402,7 +416,9 @@ function mouse_move(ctx, canvas, over_valid_card, players, back_img, cards_left,
   };
 
 }
-//gets the coordinates of mouse
+/**
+ * Gets current mouse coordinates. 
+ */
 function get_mouse_position(canvas, evt) {
   let rect = canvas.getBoundingClientRect();
   return {
@@ -463,7 +479,9 @@ function check_card_nodraw_needed(players, over_valid_card, cards_left, top_card
   draw(ctx, players, back_img, cards_left.length, top_card);
   return false;
 }
-//wind conditions function
+/**
+ * Checks win conditions for front end (single player mode)
+ */
 function check_win(players, over_valid_card) {
 
   for (let i = 0; i < players.length; i++) {
@@ -476,7 +494,6 @@ function check_win(players, over_valid_card) {
   }
 
 }
-
 //used for drawing round rectangles
 CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
   if (w < 2 * r) r = w / 2;
@@ -490,7 +507,9 @@ CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
   this.closePath();
   return this;
 }
-// redraw the scene
+/**
+ * draws the scene (cards)
+ */
 function draw(ctx, players, back_img, cards_left_len, current_top) {
 
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -514,6 +533,7 @@ function draw(ctx, players, back_img, cards_left_len, current_top) {
     // decide if the shape is a rect or circle
     // (it's a rect if it has a width property)
     let g = 30
+    //used to set the distance between the cards in a player's hands.
     let card_distance_factor = 27
     let cards_width = (players[i].cards.length - 1) * card_distance_factor + 145.2
     if (players[i].cards.length == 1) {
