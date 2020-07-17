@@ -1,4 +1,4 @@
-// Get the modal
+// Loads modal
 function modal_on_load(){
   let modal = document.getElementById("myModal");
   // Get the button that opens the modal
