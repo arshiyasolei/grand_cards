@@ -1,3 +1,6 @@
+/*
+Card stack class that maintains the deck of cards. 
+*/
 export default class card_stack {
     constructor() {
       this.cards = [];
