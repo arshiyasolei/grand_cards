@@ -15,7 +15,6 @@ export default class card_stack {
             }
             for (let i of aceme){
                 //Get image here
-                let tempi = i;
                 let res = [null,i,card_t,null,null]
                 this.cards.push(res)
             }
