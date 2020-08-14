@@ -9,10 +9,10 @@
   },
   "author": "Arshia Soleimani",
   "dependencies": {
-    "ejs": "^2.6.1",
-    "express": "^4.16.4",
-    "mocha": "^8.0.1",
+    "ejs": "^2.7.4",
+    "express": "^4.17.1",
+    "mocha": "^8.1.1",
     "readme-md-generator": "^1.0.0",
-    "socket.io": "^2.2.0"
+    "socket.io": "^2.3.0"
   }
 }
